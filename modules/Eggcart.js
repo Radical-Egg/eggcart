@@ -1,6 +1,11 @@
 const Supermarket = require('./Database.js')
 const { Telegraf } = require('telegraf')
 
+/* TODO 
+    set up logging 
+    delete function works but even if the item isn't on the list
+    it still provides the generic remove message
+*/
 class EggCart {
     constructor(fp) {
         this.store = new Supermarket(fp)
@@ -8,62 +13,123 @@ class EggCart {
     }
     addItem() {
         this.bot.command('add', (ctx) => {
-            let item_list = ctx.update.message.text.split(" ")
-            let response = 'Okay! \n'
-            for(let i = 1; i < item_list.length; i++) {
-                let item = {"item": item_list[i]}
-                if (this.store.create(item) !== false) {
-                    response += `${item_list[i]}\n`
+            let isApproved = this.approvedShoppers(ctx.from.id)
+
+            if (isApproved) {
+                let ilist = ctx.update.message.text
+                let remove_add = ilist.substr(ilist.indexOf(" ") + 1)
+
+                let item_list = remove_add.split(",")
+
+                let response = 'Okay! \n'
+                for(let i = 0; i < item_list.length; i++) {
+                    let item = {"item": item_list[i].trim()}
+                    if (this.store.create(item) !== false) {
+                        response += `${item_list[i]},`
+                    }
                 }
+                // remove last comma 
+                response = response.substr(0, response.length - 1)
+                response += ' are on the shopping list!'
+                ctx.reply(response)
+            } else {
+                ctx.reply("Sorry you cannot shop here")
+                console.log(ctx.from)
             }
-            response += 'are on the shopping list!'
-            ctx.reply(response)
         })
     }
     deleteItem() {
         this.bot.command('remove', (ctx) => {
-            let item_list = ctx.update.message.text.split(" ")
-            let response = 'Okay! \n'
-            let itemCount = 0
-            for(let i = 1; i < item_list.length; i++) {
-                this.store.delete(item_list[i])
-                response += `${item_list[i]}\n`
-            }
-            response += 'no longer on the shopping list!'
-            
-            if (itemCount > 0) {
-                ctx.reply("That item(s) are not on the list ?")
+            let isApproved = this.approvedShoppers(ctx.from.id)
+
+            if (isApproved) {
+                let ilist = ctx.update.message.text
+                let remove_add = ilist.substr(ilist.indexOf(" ") + 1)
+
+                let item_list = remove_add.split(",")
+                
+                let response = 'Okay! \n'
+
+                for(let i = 0; i < item_list.length; i++) {
+                    this.store.delete(item_list[i].trim())
+                    response += `${item_list[i]},`
+                }
+                response = response.substr(0, response.length - 1)
+                response += ' is no longer on the shopping list!\n'
+                
+                ctx.reply(response)     
             } else {
-                ctx.reply(response)
+                ctx.reply("Sorry you can't shop here :c")
             }
-            
+
         })
     }
     getList() {
         this.bot.command('list', (ctx) => {
-        let list = this.store.getTable().then((items) => {
-            let response = 'Grocery List\n'
-            
-            let i = 1
-            items.forEach((item) => {
-                response += `${i}. ${item}\n`
-                i++
-            })
-            ctx.reply(response)
-        })
-        })
+            let isApproved = this.approvedShoppers(ctx.from.id)
 
+            if (isApproved) {
+                let list = this.store.getTable().then((items) => {
+                    let response = 'Grocery List\n'
+                    let itemCount = 0
+                    let i = 1
+                    items.forEach((item) => {
+                        response += `${i}. ${item}\n`
+                        i++
+                        itemCount++
+                    })
+                    if (itemCount === 0) {
+                        ctx.reply("Nothing to shop for :o - try adding eggs")
+                    } else {
+                        ctx.reply(response)
+                    }
+                })
+            } else {
+                ctx.reply("Sorry you can't shop here :c")
+            }
+        })
+    }
+    clearList() {
+        this.bot.command('clear', (ctx) => {
+            let isApproved = this.approvedShoppers(ctx.from.id)
+
+            if(isApproved) {
+                let list = this.store.getTable().then((items) => {
+                    items.forEach((item) => {
+                        this.store.delete(item)
+                    })
+                })
+            } else {
+                ctx.reply("Sorry you can't shop here :c")
+            }
+        })
+    }
+    help() {
+        this.bot.help((ctx) => {
+            ctx.reply(
+                "Add an item : /add eggs, milk\nRemove an item : /remove eggs, milk\n Show the list : /list\nClear the list : /clear"
+            )
+        })
+    }
+    approvedShoppers(token) {
+        let canShop = false
+
+        switch(String(token)) {
+            case String(process.env.jaymen):
+                canShop = true;
+                break;
+            case String(process.env.baobei):
+                canShop = true;
+                break;
+            case String(process.env.matt):
+                canShop = true;
+                break;
+            default:
+                break;
+        }
+        return canShop
     }
     connect() { this.bot.launch() }
 }
 
 module.exports = EggCart
-
-// let item = {"item":"eggs"}
-
-// const store = new Supermarket("/Users/jaymenluther/git/eggcart/shopping.db")
-
-// //store.create(item)
-
-// //store.retreive("eggs").then((item) => console.log(`found: ${item.item}`))
-// store.printTable()

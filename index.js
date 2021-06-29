@@ -5,6 +5,8 @@ const eggCart = new bot("/Users/jaymenluther/git/eggcart/shopping.db")
 eggCart.addItem()
 eggCart.getList()
 eggCart.deleteItem()
+eggCart.clearList()
+eggCart.help()
 eggCart.connect()
 
 
