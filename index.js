@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({path : "/mnt/data/eggcart/.env"});
 const bot = require(__dirname + '/modules/Eggcart.js')
 
 const eggCart = new bot(String(process.env.DATABASE_LOCATION))
