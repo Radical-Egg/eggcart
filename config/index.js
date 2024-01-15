@@ -15,7 +15,7 @@ const config = {
     host: process.env.POSTGRES_HOST || 'localhost',
     username: process.env.POSTGRES_USERNAME,
     password: process.env.POSTGRES_PASSWORD,
-    name: process.env.POSTGRES_DB_NAME || 'postgres',
+    database: process.env.POSTGRES_DB_NAME || 'postgres',
     port: process.env.POSTGRES_PORT || 5432,
     dialect: 'postgres'
   },
