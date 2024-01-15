@@ -1,7 +1,7 @@
 # eggcart
 ## Grocery List Telegram Bot
 
-<img alt="AppLogo" src="assets/eggcart_profile.png" width="256">
+<img alt="AppLogo" src="assets/eggcart_profile.jpeg" width="256" style="border-radius: 15px; box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.1);">
 
 ## Description
 EggCart is a Telegram Bot designed to manage your grocery list efficiently. Built with Node.js, SQLite, and Telegraf, it offers a simple and interactive way to add, remove, and manage items on your grocery list through Telegram.
