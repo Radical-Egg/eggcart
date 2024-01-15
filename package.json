@@ -1,21 +1,34 @@
 {
-  "name": "eggcart",
-  "version": "1.0.0",
-  "description": "Grocery List Telegram Bot",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Radical-Egg/eggcart.git"
-  },
   "author": "Radical_Egg",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Radical-Egg/eggcart/issues"
+  "contributors": [
+    "ljgonzalez1 luis.alejandro@ljgonzalez.cl"
+  ],
+  "maintainers": [
+    "ljgonzalez1 luis.alejandro@ljgonzalez.cl"
+  ],
+
+  "name": "eggcart",
+  "version": "1.1.0",
+  "description": "Grocery List Telegram Bot",
+
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
-  "homepage": "https://github.com/Radical-Egg/eggcart#readme",
+
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ljgonzalez1/eggcart.git"
+  },
+
+  "bugs": {
+    "url": "https://github.com/ljgonzalez1/eggcart/issues"
+  },
+
+  "homepage": "https://github.com/ljgonzalez1/eggcart#readme",
+
   "dependencies": {
     "dotenv": "^10.0.0",
     "sqlite3": "^5.0.2",
