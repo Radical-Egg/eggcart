@@ -1,20 +1,17 @@
-// EggoList.controller.js
-
-const EggoListModel = require('./models/eggolist'); // Asumiendo que este es el modelo Sequelize
+const path = require('path');
+const EggoListModel = require(path.join(__dirname, '..', 'models', 'EggoList.model.js'));
 
 class EggoListController {
   constructor() {
-    // Inicialización si es necesario
   }
   
   async addItem(item) {
-    // Lógica para agregar un ítem a la lista de compras
     try {
       const newItem = await EggoListModel.create({ item });
       return newItem;
       
     } catch (error) {
-      // Manejar errores, por ejemplo, si el ítem ya existe
+      console.error(error);
       throw error;
     }
   }
@@ -26,7 +23,7 @@ class EggoListController {
       return result;
       
     } catch (error) {
-      // Manejar errores
+      console.error(error);
       throw error;
     }
   }
@@ -38,7 +35,7 @@ class EggoListController {
       return items;
       
     } catch (error) {
-      // Manejar errores
+      console.error(error);
       throw error;
     }
   }
@@ -59,7 +56,7 @@ class EggoListController {
       return item; // Retorna el ítem actualizado
       
     } catch (error) {
-      // Manejar errores, por ejemplo, si el ítem no existe
+      console.error(error);
       throw error;
     }
   }

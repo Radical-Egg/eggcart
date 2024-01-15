@@ -2,7 +2,7 @@ const path = require('path');
 const { Telegraf } = require('telegraf')
 
 const config = require(path.join(__dirname, '..', 'config'));
-const Supermarket = require(path.join(__dirname, 'Database'))
+const EggoListController = require(path.join(__dirname, '..', 'controllers', 'EggoList.controller.js'));
 
 
 /* TODO 
