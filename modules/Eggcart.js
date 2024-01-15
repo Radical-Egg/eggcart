@@ -4,87 +4,75 @@ const { Telegraf } = require('telegraf')
 const config = require(path.join(__dirname, '..', 'config'));
 const EggoListController = require(path.join(__dirname, '..', 'controllers', 'EggoList.controller.js'));
 
-
-/* TODO 
-    set up logging 
-    delete function works but even if the item isn't on the list
-    it still provides the generic remove message
-*/
 class EggCart {
-    constructor(fp) {
-        this.store = new Supermarket(fp)
-        this.bot = new Telegraf(config.telegram.token)
+    constructor() {
+        this.listController = new EggoListController();
+        this.bot = new Telegraf(config.telegram.token);
     }
+    
     addItem() {
         this.bot.command('add', async (ctx) => {
-            let iList = ctx.update.message.text;
-            let remove_add = iList.slice(iList.indexOf(" ") + 1);
-            let item_list = remove_add.split(",");
+            let messageText = ctx.update.message.text;
+            let itemsToAdd = messageText.slice(messageText.indexOf(" ") + 1).split(",");
             let response = 'Okay! \n';
             
-            for (let i = 0; i < item_list.length; i++) {
-                let item = {"item": item_list[i].trim()};
+            for (let itemText of itemsToAdd) {
                 try {
-                    let success = await this.store.create(item);
-                    if (success) {
-                        response += `${item_list[i].trim()}, `;
-                    }
+                    await this.listController.addItem({ item: itemText.trim() });
+                    response += `${itemText.trim()}, `;
                 } catch (error) {
                     console.error(error);
                 }
             }
-            response = response.slice(0, response.length - 2); // Eliminar la última coma y espacio
-            response += ' are on the shopping list!';
+            response = response.slice(0, -2) + ' are on the shopping list!';
             ctx.reply(response);
         });
     }
     
     deleteItem() {
         this.bot.command('remove', async (ctx) => {
-            let iList = ctx.update.message.text;
-            let remove_add = iList.slice(iList.indexOf(" ") + 1);
-            let item_list = remove_add.split(",");
+            let messageText = ctx.update.message.text;
+            let itemsToRemove = messageText.slice(messageText.indexOf(" ") + 1).split(",");
             let response = 'Okay! \n';
             
-            for (let i = 0; i < item_list.length; i++) {
+            for (let itemText of itemsToRemove) {
                 try {
-                    await this.store.delete(item_list[i].trim());
-                    response += `${item_list[i].trim()}, `;
+                    await this.listController.removeItem(itemText.trim());
+                    response += `${itemText.trim()}, `;
                 } catch (error) {
                     console.error(error);
                 }
             }
-            response = response.slice(0, response.length - 2);
-            response += ' is no longer on the shopping list!\n';
+            response = response.slice(0, -2) + ' is no longer on the shopping list!';
             ctx.reply(response);
         });
     }
     
     getList() {
-        this.bot.command('list', (ctx) => {
-            let list = this.store.getTable().then((items) => {
-                let response = 'Grocery List\n'
-                let itemCount = 0
-                let i = 1
-                items.forEach((item) => {
-                    response += `${i}. ${item}\n`
-                    i++
-                    itemCount++
-                })
-                if (itemCount === 0) {
-                    ctx.reply("Nothing to shop for :o - try adding eggs")
-                } else {
-                    ctx.reply(response)
+        this.bot.command('list', async (ctx) => {
+            try {
+                let items = await this.listController.getItems();
+                let response = 'Grocery List\n';
+                items.forEach((item, index) => {
+                    response += `${index + 1}. ${item.item}\n`;
+                });
+                if (items.length === 0) {
+                    response = "Nothing to shop for :o - try adding eggs";
                 }
-            })
-        })
+                ctx.reply(response);
+            } catch (error) {
+                console.error(error);
+                ctx.reply("An error occurred while getting the list.");
+            }
+        });
     }
+    
     clearList() {
         this.bot.command('clear', async (ctx) => {
             try {
-                let items = await this.store.getTable();
+                let items = await this.listController.getItems();
                 for (const item of items) {
-                    await this.store.delete(item);
+                    await this.listController.removeItem(item.id);
                 }
                 ctx.reply("The shopping list has been cleared!");
             } catch (error) {
@@ -97,14 +85,19 @@ class EggCart {
     help() {
         this.bot.help((ctx) => {
             ctx.reply(
-                "Add an item : /add eggs, milk\n" +
-              "Remove an item : /remove eggs, milk\n" +
-              "Show the list : /list\n" +
-              "Clear the list : /clear"
-            )
-        })
+              "Add an item: /add eggs, milk\n" +
+              "Remove an item: /remove eggs, milk\n" +
+              "Show the list: /list\n" +
+              "Clear the list: /clear"
+            
+            );
+        });
     }
-    connect() { this.bot.launch() }
+    
+    connect() {
+        this.bot.launch();
+    }
 }
 
-module.exports = EggCart
+module.exports = EggCart;
+
