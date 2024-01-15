@@ -60,7 +60,7 @@ Once the bot is running, you can interact with it on Telegram using the followin
 - Primary Contributor and Maintainer: ljgonzalez1
 
 ## NOTES / Pending:
-`/delete item1, item2, ...` not working for some reaseon.
+`/remove item1, item2, ...` not working for some reaseon.
 
 ## License
 EggCart is released under the [ISC License](LICENSE). See the LICENSE file for more details.
