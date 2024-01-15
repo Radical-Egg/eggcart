@@ -112,22 +112,7 @@ class EggCart {
         })
     }
     approvedShoppers(token) {
-        let canShop = false
-
-        switch(String(token)) {
-            case String(process.env.jaymen):
-                canShop = true;
-                break;
-            case String(process.env.baobei):
-                canShop = true;
-                break;
-            case String(process.env.matt):
-                canShop = true;
-                break;
-            default:
-                break;
-        }
-        return canShop
+        return true;
     }
     connect() { this.bot.launch() }
 }
