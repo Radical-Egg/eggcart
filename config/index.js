@@ -1,10 +1,10 @@
-import dotenv from 'dotenv';
+const dotenv = require('dotenv');
 
 dotenv.config({
   path: '.env',
 });
 
-if (!process.env.DB_USERNAME || !process.env.DB_PASSWORD) {
+if (!process.env.POSTGRES_USERNAME || !process.env.POSTGRES_PASSWORD) {
   throw new Error('DB_USERNAME and DB_PASSWORD are required');
 }
 

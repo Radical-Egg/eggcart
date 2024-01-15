@@ -1,6 +1,6 @@
 const path = require('path');
 
-const config = require(path.join(__dirname, '..', 'config'));
+const config = require(path.join(__dirname, 'config'));
 
 const EggCart = require(path.join(__dirname, 'modules', 'Eggcart'))
 const eggCart = new EggCart(String(process.env.DATABASE_LOCATION));
