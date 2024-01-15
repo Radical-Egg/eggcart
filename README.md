@@ -51,7 +51,7 @@ To get EggCart up and running, follow these steps:
 ## Usage
 Once the bot is running, you can interact with it on Telegram using the following commands:
 - `/add item1, item2, ...` - Add items to your grocery list.
-- `/remove item1, item2, ...` - Remove items from your grocery list.
+- ~~`/remove item1, item2, ...` - Remove items from your grocery list.~~
 - `/list` - Display the current grocery list.
 - `/clear` - Clear the grocery list.
 
