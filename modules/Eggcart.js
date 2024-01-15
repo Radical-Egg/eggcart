@@ -13,95 +13,63 @@ class EggCart {
     }
     addItem() {
         this.bot.command('add', (ctx) => {
-            let isApproved = this.approvedShoppers(ctx.from.id)
-
-            if (isApproved) {
-                let ilist = ctx.update.message.text
-                let remove_add = ilist.substr(ilist.indexOf(" ") + 1)
-
-                let item_list = remove_add.split(",")
-
-                let response = 'Okay! \n'
-                for(let i = 0; i < item_list.length; i++) {
-                    let item = {"item": item_list[i].trim()}
-                    if (this.store.create(item) !== false) {
-                        response += `${item_list[i]},`
-                    }
+            let ilist = ctx.update.message.text
+            let remove_add = ilist.substr(ilist.indexOf(" ") + 1)
+            let item_list = remove_add.split(",")
+            let response = 'Okay! \n'
+            for (let i = 0; i < item_list.length; i++) {
+                let item = {"item": item_list[i].trim()}
+                if (this.store.create(item) !== false) {
+                    response += `${item_list[i]},`
                 }
-                // remove last comma 
-                response = response.substr(0, response.length - 1)
-                response += ' are on the shopping list!'
-                ctx.reply(response)
-            } else {
-                ctx.reply("Sorry you cannot shop here")
-                console.log(ctx.from)
             }
+            response = response.substr(0, response.length - 1)
+            response += ' are on the shopping list!'
+            ctx.reply(response)
         })
     }
     deleteItem() {
         this.bot.command('remove', (ctx) => {
-            let isApproved = this.approvedShoppers(ctx.from.id)
-
-            if (isApproved) {
-                let ilist = ctx.update.message.text
-                let remove_add = ilist.substr(ilist.indexOf(" ") + 1)
-
-                let item_list = remove_add.split(",")
-                
-                let response = 'Okay! \n'
-
-                for(let i = 0; i < item_list.length; i++) {
-                    this.store.delete(item_list[i].trim())
-                    response += `${item_list[i]},`
-                }
-                response = response.substr(0, response.length - 1)
-                response += ' is no longer on the shopping list!\n'
-                
-                ctx.reply(response)     
-            } else {
-                ctx.reply("Sorry you can't shop here :c")
+            let ilist = ctx.update.message.text
+            let remove_add = ilist.substr(ilist.indexOf(" ") + 1)
+            let item_list = remove_add.split(",")
+            let response = 'Okay! \n'
+            for (let i = 0; i < item_list.length; i++) {
+                this.store.delete(item_list[i].trim())
+                response += `${item_list[i]},`
             }
+            response = response.substr(0, response.length - 1)
+            response += ' is no longer on the shopping list!\n'
+            ctx.reply(response)
 
         })
     }
     getList() {
         this.bot.command('list', (ctx) => {
-            let isApproved = this.approvedShoppers(ctx.from.id)
-
-            if (isApproved) {
-                let list = this.store.getTable().then((items) => {
-                    let response = 'Grocery List\n'
-                    let itemCount = 0
-                    let i = 1
-                    items.forEach((item) => {
-                        response += `${i}. ${item}\n`
-                        i++
-                        itemCount++
-                    })
-                    if (itemCount === 0) {
-                        ctx.reply("Nothing to shop for :o - try adding eggs")
-                    } else {
-                        ctx.reply(response)
-                    }
+            let list = this.store.getTable().then((items) => {
+                let response = 'Grocery List\n'
+                let itemCount = 0
+                let i = 1
+                items.forEach((item) => {
+                    response += `${i}. ${item}\n`
+                    i++
+                    itemCount++
                 })
-            } else {
-                ctx.reply("Sorry you can't shop here :c")
-            }
+                if (itemCount === 0) {
+                    ctx.reply("Nothing to shop for :o - try adding eggs")
+                } else {
+                    ctx.reply(response)
+                }
+            })
         })
     }
     clearList() {
         this.bot.command('clear', (ctx) => {
-            let isApproved = this.approvedShoppers(ctx.from.id)
-
-            if(isApproved) {
-                let list = this.store.getTable().then((items) => {
-                    items.forEach((item) => {
-                        this.store.delete(item)
-                    })
+            let list = this.store.getTable().then((items) => {
+                items.forEach((item) => {
+                    this.store.delete(item)
                 })
-            } else {
-                ctx.reply("Sorry you can't shop here :c")
-            }
+            })
         })
     }
     help() {
@@ -110,24 +78,6 @@ class EggCart {
                 "Add an item : /add eggs, milk\nRemove an item : /remove eggs, milk\n Show the list : /list\nClear the list : /clear"
             )
         })
-    }
-    approvedShoppers(token) {
-        let canShop = false
-
-        switch(String(token)) {
-            case String(process.env.jaymen):
-                canShop = true;
-                break;
-            case String(process.env.baobei):
-                canShop = true;
-                break;
-            case String(process.env.matt):
-                canShop = true;
-                break;
-            default:
-                break;
-        }
-        return canShop
     }
     connect() { this.bot.launch() }
 }
