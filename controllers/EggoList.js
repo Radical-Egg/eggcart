@@ -1,7 +1,7 @@
 const path = require('path');
-const EggoListModel = require(path.join(__dirname, '..', 'models', 'EggoList.model.js'));
+const EggoListModel = require(path.join(__dirname, '..', 'models', 'EggoList.js'));
 
-class EggoListController {
+class EggoList {
   constructor() {
   }
   
@@ -62,4 +62,4 @@ class EggoListController {
   }
 }
 
-module.exports = EggoListController;
+module.exports = EggoList;
