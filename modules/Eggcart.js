@@ -34,23 +34,28 @@ class EggCart {
             ctx.reply(response);
         });
     }
-
+    
     deleteItem() {
-        this.bot.command('remove', (ctx) => {
-            let iList = ctx.update.message.text
-            let remove_add = iList.slice(iList.indexOf(" ") + 1)
-            let item_list = remove_add.split(",")
-            let response = 'Okay! \n'
+        this.bot.command('remove', async (ctx) => {
+            let iList = ctx.update.message.text;
+            let remove_add = iList.slice(iList.indexOf(" ") + 1);
+            let item_list = remove_add.split(",");
+            let response = 'Okay! \n';
+            
             for (let i = 0; i < item_list.length; i++) {
-                this.store.delete(item_list[i].trim())
-                response += `${item_list[i]},`
+                try {
+                    await this.store.delete(item_list[i].trim());
+                    response += `${item_list[i].trim()}, `;
+                } catch (error) {
+                    console.error(error);
+                }
             }
-            response = response.slice(0, response.length - 1)
-            response += ' is no longer on the shopping list!\n'
-            ctx.reply(response)
-
-        })
+            response = response.slice(0, response.length - 2);
+            response += ' is no longer on the shopping list!\n';
+            ctx.reply(response);
+        });
     }
+    
     getList() {
         this.bot.command('list', (ctx) => {
             let list = this.store.getTable().then((items) => {
@@ -71,14 +76,20 @@ class EggCart {
         })
     }
     clearList() {
-        this.bot.command('clear', (ctx) => {
-            let list = this.store.getTable().then((items) => {
-                items.forEach((item) => {
-                    this.store.delete(item)
-                })
-            })
-        })
+        this.bot.command('clear', async (ctx) => {
+            try {
+                let items = await this.store.getTable();
+                for (const item of items) {
+                    await this.store.delete(item);
+                }
+                ctx.reply("The shopping list has been cleared!");
+            } catch (error) {
+                console.error(error);
+                ctx.reply("An error occurred while clearing the list.");
+            }
+        });
     }
+    
     help() {
         this.bot.help((ctx) => {
             ctx.reply(
