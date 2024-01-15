@@ -12,10 +12,10 @@ if (!process.env.POSTGRES_USERNAME || !process.env.POSTGRES_PASSWORD) {
 
 // "Clase" de datos con configuraciones por defecto
 const baseConfig = {
-  username: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME || 'pgdb',
-  port: process.env.DB_PORT || 5432,
+  username: process.env.POSTGRES_USERNAME,
+  password: process.env.POSTGRES_PASSWORD,
+  database: process.env.POSTGRES_DB_NAME || 'pgdb',
+  port: process.env.POSTGRES_PORT || 5432,
   dialect: 'postgres'
 };
 

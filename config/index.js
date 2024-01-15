@@ -2,6 +2,7 @@ const path = require("path");
 const dotenv = require('dotenv');
 
 const dbConfig = require(path.join(__dirname, 'config'));
+const bot = require(path.join(__dirname, 'bot'));
 
 const env = process.env.NODE_ENV || 'default';
 
@@ -21,31 +22,18 @@ const generalConfig = {
     test: dbConfig.test,
     production: dbConfig.production
   },
-  server: {
-    default: serverEnvironment.default,
-    development: serverEnvironment.development,
-    test: serverEnvironment.test,
-    production: serverEnvironment.production
-  },
-  settings: appSettings
+  telegram: {
+    default: bot.default,
+    development: bot.development,
+    test: bot.test,
+    production: bot.production
+  }
 };
 
-
 const config = {
-  database: {
-    host: process.env.POSTGRES_HOST || 'localhost',
-    username: process.env.POSTGRES_USERNAME,
-    password: process.env.POSTGRES_PASSWORD,
-    database: process.env.POSTGRES_DB_NAME || 'postgres',
-    port: process.env.POSTGRES_PORT || 5432,
-    dialect: 'postgres'
-  },
-  env: env,
-  telegram: {
-    token: process.env.TELEGRAM_TOKEN
-  }
-  
-}
+  db: generalConfig.db[env],
+  telegram: generalConfig.telegram[env],
+};
 
 console.log(config);
 
