@@ -13,8 +13,8 @@ class EggCart {
     }
     addItem() {
         this.bot.command('add', (ctx) => {
-            let ilist = ctx.update.message.text
-            let remove_add = ilist.substr(ilist.indexOf(" ") + 1)
+            let iList = ctx.update.message.text
+            let remove_add = iList.slice(iList.indexOf(" ") + 1)
             let item_list = remove_add.split(",")
             let response = 'Okay! \n'
             for (let i = 0; i < item_list.length; i++) {
@@ -23,22 +23,22 @@ class EggCart {
                     response += `${item_list[i]},`
                 }
             }
-            response = response.substr(0, response.length - 1)
+            response = response.slice(0, response.length - 1)
             response += ' are on the shopping list!'
             ctx.reply(response)
         })
     }
     deleteItem() {
         this.bot.command('remove', (ctx) => {
-            let ilist = ctx.update.message.text
-            let remove_add = ilist.substr(ilist.indexOf(" ") + 1)
+            let iList = ctx.update.message.text
+            let remove_add = iList.slice(iList.indexOf(" ") + 1)
             let item_list = remove_add.split(",")
             let response = 'Okay! \n'
             for (let i = 0; i < item_list.length; i++) {
                 this.store.delete(item_list[i].trim())
                 response += `${item_list[i]},`
             }
-            response = response.substr(0, response.length - 1)
+            response = response.slice(0, response.length - 1)
             response += ' is no longer on the shopping list!\n'
             ctx.reply(response)
 
@@ -75,7 +75,10 @@ class EggCart {
     help() {
         this.bot.help((ctx) => {
             ctx.reply(
-                "Add an item : /add eggs, milk\nRemove an item : /remove eggs, milk\n Show the list : /list\nClear the list : /clear"
+                "Add an item : /add eggs, milk\n" +
+              "Remove an item : /remove eggs, milk\n" +
+              "Show the list : /list\n" +
+              "Clear the list : /clear"
             )
         })
     }
