@@ -86,7 +86,7 @@ class Supermarket extends Database {
             })
         })
     }
-    // TODO - updating is working but we need to log our updates to somewhere
+    
     handleUpdate = (item, new_item) => {
         this.retreive(item.item).then((item) => {
             let sqlCommand = `UPDATE ${this.table} SET item = ? WHERE item = ?`
@@ -131,16 +131,19 @@ class Supermarket extends Database {
     }
     getTable() {
         return new Promise((resolve, reject) => {
-            var shopping_list = []
-            this.db.each(`SELECT item FROM ${this.table}`, 
-            (err,row) => {
-                if (err) {reject(console.log("we got a prob"))}
-                shopping_list.push(row.item)
-            }, 
-            (err, list) => {
-                resolve(shopping_list)
-            })
-        })
+            let shopping_list = [];
+            this.db.each(`SELECT item FROM ${this.table}`, (err, row) => {
+                if (err) {
+                    console.log("we got a prob", err);
+                    reject(err);
+                    return;
+                }
+                shopping_list.push(row.item);
+                }, () => {
+                resolve(shopping_list);
+            }
+            );
+        });
     }
 }
 
