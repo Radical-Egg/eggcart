@@ -12,122 +12,93 @@ class EggCart {
         this.bot = new Telegraf(process.env.API_TOKEN)
     }
     addItem() {
-        this.bot.command('add', (ctx) => {
-            let isApproved = this.approvedShoppers(ctx.from.id)
-
-            if (isApproved) {
-                let ilist = ctx.update.message.text
-                let remove_add = ilist.substr(ilist.indexOf(" ") + 1)
-
-                let item_list = remove_add.split(",")
-
-                let response = 'Okay! \n'
-                for(let i = 0; i < item_list.length; i++) {
-                    let item = {"item": item_list[i].trim()}
-                    if (this.store.create(item) !== false) {
-                        response += `${item_list[i]},`
+        this.bot.command('add', async (ctx) => {
+            let iList = ctx.update.message.text;
+            let remove_add = iList.slice(iList.indexOf(" ") + 1);
+            let item_list = remove_add.split(",");
+            let response = 'Okay! \n';
+            
+            for (let i = 0; i < item_list.length; i++) {
+                let item = {"item": item_list[i].trim()};
+                try {
+                    let success = await this.store.create(item);
+                    if (success) {
+                        response += `${item_list[i].trim()}, `;
                     }
+                } catch (error) {
+                    console.error(error);
                 }
-                // remove last comma 
-                response = response.substr(0, response.length - 1)
-                response += ' are on the shopping list!'
-                ctx.reply(response)
-            } else {
-                ctx.reply("Sorry you cannot shop here")
-                console.log(ctx.from)
             }
-        })
+            response = response.slice(0, response.length - 2); // Eliminar la última coma y espacio
+            response += ' are on the shopping list!';
+            ctx.reply(response);
+        });
     }
+    
     deleteItem() {
-        this.bot.command('remove', (ctx) => {
-            let isApproved = this.approvedShoppers(ctx.from.id)
-
-            if (isApproved) {
-                let ilist = ctx.update.message.text
-                let remove_add = ilist.substr(ilist.indexOf(" ") + 1)
-
-                let item_list = remove_add.split(",")
-                
-                let response = 'Okay! \n'
-
-                for(let i = 0; i < item_list.length; i++) {
-                    this.store.delete(item_list[i].trim())
-                    response += `${item_list[i]},`
+        this.bot.command('remove', async (ctx) => {
+            let iList = ctx.update.message.text;
+            let remove_add = iList.slice(iList.indexOf(" ") + 1);
+            let item_list = remove_add.split(",");
+            let response = 'Okay! \n';
+            
+            for (let i = 0; i < item_list.length; i++) {
+                try {
+                    await this.store.delete(item_list[i].trim());
+                    response += `${item_list[i].trim()}, `;
+                } catch (error) {
+                    console.error(error);
                 }
-                response = response.substr(0, response.length - 1)
-                response += ' is no longer on the shopping list!\n'
-                
-                ctx.reply(response)     
-            } else {
-                ctx.reply("Sorry you can't shop here :c")
             }
-
-        })
+            response = response.slice(0, response.length - 2);
+            response += ' is no longer on the shopping list!\n';
+            ctx.reply(response);
+        });
     }
+    
     getList() {
         this.bot.command('list', (ctx) => {
-            let isApproved = this.approvedShoppers(ctx.from.id)
-
-            if (isApproved) {
-                let list = this.store.getTable().then((items) => {
-                    let response = 'Grocery List\n'
-                    let itemCount = 0
-                    let i = 1
-                    items.forEach((item) => {
-                        response += `${i}. ${item}\n`
-                        i++
-                        itemCount++
-                    })
-                    if (itemCount === 0) {
-                        ctx.reply("Nothing to shop for :o - try adding eggs")
-                    } else {
-                        ctx.reply(response)
-                    }
+            let list = this.store.getTable().then((items) => {
+                let response = 'Grocery List\n'
+                let itemCount = 0
+                let i = 1
+                items.forEach((item) => {
+                    response += `${i}. ${item}\n`
+                    i++
+                    itemCount++
                 })
-            } else {
-                ctx.reply("Sorry you can't shop here :c")
-            }
+                if (itemCount === 0) {
+                    ctx.reply("Nothing to shop for :o - try adding eggs")
+                } else {
+                    ctx.reply(response)
+                }
+            })
         })
     }
     clearList() {
-        this.bot.command('clear', (ctx) => {
-            let isApproved = this.approvedShoppers(ctx.from.id)
-
-            if(isApproved) {
-                let list = this.store.getTable().then((items) => {
-                    items.forEach((item) => {
-                        this.store.delete(item)
-                    })
-                })
-            } else {
-                ctx.reply("Sorry you can't shop here :c")
+        this.bot.command('clear', async (ctx) => {
+            try {
+                let items = await this.store.getTable();
+                for (const item of items) {
+                    await this.store.delete(item);
+                }
+                ctx.reply("The shopping list has been cleared!");
+            } catch (error) {
+                console.error(error);
+                ctx.reply("An error occurred while clearing the list.");
             }
-        })
+        });
     }
+    
     help() {
         this.bot.help((ctx) => {
             ctx.reply(
-                "Add an item : /add eggs, milk\nRemove an item : /remove eggs, milk\n Show the list : /list\nClear the list : /clear"
+                "Add an item : /add eggs, milk\n" +
+              "Remove an item : /remove eggs, milk\n" +
+              "Show the list : /list\n" +
+              "Clear the list : /clear"
             )
         })
-    }
-    approvedShoppers(token) {
-        let canShop = false
-
-        switch(String(token)) {
-            case String(process.env.jaymen):
-                canShop = true;
-                break;
-            case String(process.env.baobei):
-                canShop = true;
-                break;
-            case String(process.env.matt):
-                canShop = true;
-                break;
-            default:
-                break;
-        }
-        return canShop
     }
     connect() { this.bot.launch() }
 }

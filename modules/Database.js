@@ -38,25 +38,38 @@ class Supermarket extends Database {
         this.table = 'eggo_list'
     }
     create(data) {
-        this.db.serialize(() => {
-            this.createTable(this.table, this.grocery_list_attrs)
-            this.handleCreate(data)
-        })
+        return new Promise((resolve, reject) => {
+            this.db.serialize(() => {
+                this.createTable(this.table, this.grocery_list_attrs);
+                
+                // Ahora handleCreate debería ser modificado para manejar promesas
+                this.handleCreate(data).then(result => {
+                    resolve(true); // Si la creación fue exitosa
+                }).catch(err => {
+                    console.error(err);
+                    resolve(false); // Si hubo un error
+                });
+            });
+        });
     }
+    
     handleCreate(data) {
-        let sqlCommand = `INSERT OR IGNORE INTO ${this.table} VALUES (?)`
-
-        let insert = this.db.prepare(sqlCommand)
-
-        try {
-            insert.run(data['item'])
-            console.log("Entry has been created or already exists for " + data['item'])
-        } catch (error) {
-            console.log(error.message)
-            console.log(`Cannot insert this user because it already exists
-                 \n if your need to update values - use update function `)
-            return false
-        }
+        return new Promise((resolve, reject) => {
+            let sqlCommand = `INSERT OR IGNORE INTO ${this.table} VALUES (?)`;
+            let insert = this.db.prepare(sqlCommand);
+            
+            insert.run(data['item'], function(err) {
+                if (err) {
+                    console.log(err.message);
+                    console.log(`Cannot insert this item because it already exists
+                             \n if your need to update values - use update function `);
+                    reject(err); // Rechazar la promesa con el error
+                } else {
+                    console.log("Entry has been created or already exists for " + data['item']);
+                    resolve(); // Resolver la promesa exitosamente
+                }
+            });
+        });
     }
 
     // can access this in the main by doing
@@ -73,7 +86,7 @@ class Supermarket extends Database {
             })
         })
     }
-    // TODO - updating is working but we need to log our updates to somewhere
+    
     handleUpdate = (item, new_item) => {
         this.retreive(item.item).then((item) => {
             let sqlCommand = `UPDATE ${this.table} SET item = ? WHERE item = ?`
@@ -118,16 +131,19 @@ class Supermarket extends Database {
     }
     getTable() {
         return new Promise((resolve, reject) => {
-            var shopping_list = []
-            this.db.each(`SELECT item FROM ${this.table}`, 
-            (err,row) => {
-                if (err) {reject(console.log("we got a prob"))}
-                shopping_list.push(row.item)
-            }, 
-            (err, list) => {
-                resolve(shopping_list)
-            })
-        })
+            let shopping_list = [];
+            this.db.each(`SELECT item FROM ${this.table}`, (err, row) => {
+                if (err) {
+                    console.log("we got a prob", err);
+                    reject(err);
+                    return;
+                }
+                shopping_list.push(row.item);
+                }, () => {
+                resolve(shopping_list);
+            }
+            );
+        });
     }
 }
 
