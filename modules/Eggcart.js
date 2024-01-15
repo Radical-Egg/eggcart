@@ -18,7 +18,7 @@ class EggCart {
             
             for (let itemText of itemsToAdd) {
                 try {
-                    await this.listController.addItem({ item: itemText.trim() });
+                    await this.listController.addItem(itemText.trim());
                     response += `${itemText.trim()}, `;
                 } catch (error) {
                     console.error(error);

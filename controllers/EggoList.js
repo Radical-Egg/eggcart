@@ -1,13 +1,16 @@
 const path = require('path');
-const EggoListModel = require(path.join(__dirname, '..', 'models', 'EggoList.js'));
+const db = require(path.join(__dirname, '..', 'models'));
+
+const EggoListModel = db.EggoList;
 
 class EggoList {
   constructor() {
   }
   
-  async addItem(item) {
+  async addItem(itemText) {
+    
     try {
-      const newItem = await EggoListModel.create({ item });
+      const newItem = await EggoListModel.create({ item: itemText });
       return newItem;
       
     } catch (error) {

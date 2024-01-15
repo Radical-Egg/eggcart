@@ -4,18 +4,19 @@ const fs = require('fs');
 const path = require('path');
 const { Sequelize } = require('sequelize');
 
-const config = require(path.join(__dirname, '..', 'config')).database;
+const config = require(path.join(__dirname, '..', 'config'));
 
 const basename = path.basename(__filename);
 const db = {};
 
 let sequelize;
 
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
-} else {
-  sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, config.db);
-}
+// if (config.use_env_variable) {
+//   sequelize = new Sequelize(process.env[config.use_env_variable], config);
+// } else {
+//   sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, config.db);
+// }
+sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, config.db);
 
 fs
   .readdirSync(__dirname)
