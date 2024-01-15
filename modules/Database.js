@@ -1,150 +1,104 @@
-const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
+const orm = require(path.join(__dirname, 'models'));
 
-class Database {
-    constructor(fp) {
-        this.db = new sqlite3.Database(fp, (err) => {
-            if (err) {
-                console.error(err.message)
-            }
-            // console.log("connected to the database") log this later
-        })
-    }
-    createTable(tableName, tableAttributes) {
-        let sqlCommand = "CREATE TABLE IF NOT EXISTS " + tableName + "("
 
-        tableAttributes.forEach(element => {
-            sqlCommand += element['id'] + " " + element['type'] + ","
-        });
-        sqlCommand = sqlCommand.slice(0, -1) + ')'
-
+class Supermarket {
+    async create(data) {
         try {
-            this.db.run(sqlCommand);
+        
+        
+        } catch (e) {
+        
         }
-        catch (err) { console.error(err) }
     }
-    printAllTables() {
-        this.db.all('SELECT name FROM sqlite_master WHERE type="table"', (err, tables) => {
-            tables ? console.log(tables) : console.log(err)
-        })
+    
+    async retrieve(key) {
+        try {
+        
+        
+        } catch (e) {
+        
+        }
+    }
+    
+    async update(item, newData) {
+        try {
+        
+        
+        } catch (e) {
+        
+        }
+    }
+    
+    async delete(key) {
+        try {
+        
+        
+        } catch (e) {
+        
+        }
+    }
+    
+    async getTable() {
+        try {
+        
+        
+        } catch (e) {
+        
+        }
     }
 }
 
-class Supermarket extends Database {
-    constructor(fp) {
-        super(fp)
-        this.grocery_list_attrs = [
-            {'id': "item", 'type': 'UNIQUE' }
-        ]
-        this.table = 'eggo_list'
-    }
-    create(data) {
-        return new Promise((resolve, reject) => {
-            this.db.serialize(() => {
-                this.createTable(this.table, this.grocery_list_attrs);
-                
-                // Ahora handleCreate debería ser modificado para manejar promesas
-                this.handleCreate(data).then(result => {
-                    resolve(true); // Si la creación fue exitosa
-                }).catch(err => {
-                    console.error(err);
-                    resolve(false); // Si hubo un error
-                });
-            });
-        });
-    }
-    
-    handleCreate(data) {
-        return new Promise((resolve, reject) => {
-            let sqlCommand = `INSERT OR IGNORE INTO ${this.table} VALUES (?)`;
-            let insert = this.db.prepare(sqlCommand);
-            
-            insert.run(data['item'], function(err) {
-                if (err) {
-                    console.log(err.message);
-                    console.log(`Cannot insert this item because it already exists
-                             \n if your need to update values - use update function `);
-                    reject(err); // Rechazar la promesa con el error
-                } else {
-                    console.log("Entry has been created or already exists for " + data['item']);
-                    resolve(); // Resolver la promesa exitosamente
-                }
-            });
-        });
-    }
-
-    // can access this in the main by doing
-    // let user = db.retreive(key).then((key) => {do whatever with key})
-    retreive = (key) => {
-        return new Promise((resolve, reject) => {
-            let sqlCommand = `SELECT * FROM ${this.table} WHERE item = ?`
-
-            this.db.get(sqlCommand, key, (err, rows) => {
-                if (err || rows === undefined) {
-                    reject()
-                }
-                resolve(rows)
-            })
-        })
-    }
-    
-    handleUpdate = (item, new_item) => {
-        this.retreive(item.item).then((item) => {
-            let sqlCommand = `UPDATE ${this.table} SET item = ? WHERE item = ?`
-
-            this.db.run(sqlCommand, [new_item,item.item], function (err) {
-                if (err) {
-                    return console.error(err.message)
-                }
-                console.log(`Row(s) updated: ${this.changes}`);
-                console.log(`${item.item}`)
-            })
-        }).catch(() => {
-            console.log("Unable to update entry - could not locate in database")
+class Supermarket_old {
+    async create(data) {
+        try {
+            const newItem = await orm.EggoList.create(data);
+            return newItem; // Retorna el ítem creado
+        } catch (error) {
+            console.error('Error al crear un ítem:', error);
+            throw error; // Propaga el error
         }
-        )
     }
-    update(item_obj, new_item) {
-        this.db.serialize(() => {
-            this.handleUpdate(item_obj, new_item)
-        })
+    
+    async retrieve(key) {
+        try {
+            const item = await orm.EggoList.findOne({ where: { item: key } });
+            return item; // Retorna el ítem encontrado
+        } catch (error) {
+            console.error('Error al recuperar un ítem:', error);
+            throw error; // Propaga el error
+        }
     }
-    delete = (key) => {
-        this.retreive(key).then((user) => {
-            let sqlCommand = `DELETE FROM ${this.table} WHERE item = ?`
-
-            this.db.run(sqlCommand, key, function (err) {
-                if (err) {
-                    return console.error(err.message)
-                }
-                console.log(`row deleted ${this.changes}`)
-            })
-        }).catch(() => {
-            console.log("Entry does not exist in DB cannot delete")
-            return false
-        })
-
+    
+    async update(item, newData) {
+        try {
+            const updatedItem = await orm.EggoList.update(newData, { where: { item: item } });
+            return updatedItem; // Retorna el ítem actualizado
+        } catch (error) {
+            console.error('Error al actualizar un ítem:', error);
+            throw error; // Propaga el error
+        }
     }
-    printTable() {
-        this.db.each(`SELECT item FROM ${this.table}`, (err, row) => {
-            console.log(`Item: ${row.item}`)
-        })
+    
+    async delete(key) {
+        try {
+            const deletedItem = await orm.EggoList.destroy({ where: { item: key } });
+            return deletedItem; // Retorna el resultado de la eliminación
+        } catch (error) {
+            console.error('Error al eliminar un ítem:', error);
+            throw error; // Propaga el error
+        }
     }
-    getTable() {
-        return new Promise((resolve, reject) => {
-            let shopping_list = [];
-            this.db.each(`SELECT item FROM ${this.table}`, (err, row) => {
-                if (err) {
-                    console.log("we got a prob", err);
-                    reject(err);
-                    return;
-                }
-                shopping_list.push(row.item);
-                }, () => {
-                resolve(shopping_list);
-            }
-            );
-        });
+    
+    async getTable() {
+        try {
+            const items = await orm.EggoList.findAll();
+            return items.map(item => item.item); // Retorna una lista de ítems
+        } catch (error) {
+            console.error('Error al obtener la tabla:', error);
+            throw error; // Propaga el error
+        }
     }
 }
 
-module.exports = Supermarket
+module.exports = Supermarket;
