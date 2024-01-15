@@ -55,12 +55,12 @@ Once the bot is running, you can interact with it on Telegram using the followin
 - `/list` - Display the current grocery list.
 - `/clear` - Clear the grocery list.
 
-## Contributing
-Contributions to EggCart are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) for more information on how to report issues, suggest features, or submit pull requests.
-
 ## Credits
 - Original Author: Radical_Egg
 - Primary Contributor and Maintainer: ljgonzalez1
+
+## NOTES / Pending:
+`/delete item1, item2, ...` not working for some reaseon.
 
 ## License
 EggCart is released under the [ISC License](LICENSE). See the LICENSE file for more details.

@@ -29,6 +29,7 @@ class EggCart {
         });
     }
     
+    // FIXME: Not working
     deleteItem() {
         this.bot.command('remove', async (ctx) => {
             let messageText = ctx.update.message.text;
