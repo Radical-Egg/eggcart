@@ -14,7 +14,11 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   EggoList.init({
-    item: DataTypes.STRING
+    item: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false
+    }
   }, {
     sequelize,
     modelName: 'EggoList',
