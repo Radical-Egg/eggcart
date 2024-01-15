@@ -1,7 +1,8 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: '/mnt/data/eggcart/.env' });
+const path = require('path');
 
-import EggCart from './modules/Eggcart.js';
+const config = require(path.join(__dirname, '..', 'config'));
+
+const EggCart = require(path.join(__dirname, 'modules', 'Eggcart'))
 const eggCart = new EggCart(String(process.env.DATABASE_LOCATION));
 
 eggCart.addItem()

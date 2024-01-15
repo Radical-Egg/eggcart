@@ -147,4 +147,4 @@ class Supermarket extends Database {
     }
 }
 
-export default Supermarket
+module.exports = Supermarket

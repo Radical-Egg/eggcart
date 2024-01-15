@@ -1,5 +1,9 @@
-import Supermarket from './Database.js'
-import { Telegraf } from 'telegraf';
+const path = require('path');
+const { Telegraf } = require('telegraf')
+
+const config = require(path.join(__dirname, '..', 'config'));
+const Supermarket = require(path.join(__dirname, 'Database'))
+
 
 /* TODO 
     set up logging 
@@ -9,7 +13,7 @@ import { Telegraf } from 'telegraf';
 class EggCart {
     constructor(fp) {
         this.store = new Supermarket(fp)
-        this.bot = new Telegraf(process.env.API_TOKEN)
+        this.bot = new Telegraf(config.telegram.token)
     }
     addItem() {
         this.bot.command('add', async (ctx) => {
@@ -103,4 +107,4 @@ class EggCart {
     connect() { this.bot.launch() }
 }
 
-export default EggCart
+module.exports = EggCart
