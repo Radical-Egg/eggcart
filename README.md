@@ -31,19 +31,27 @@ To get EggCart up and running, follow these steps:
     yarn install
     ```
    
-3. Create a `.env` file in the root directory and add your Telegram Bot API key and other required environment variables.
-   
-    3.1 updated approvedShoppers function on line 114 (EggCart.js) with your process.env.user variable
+3. Setup your postgres environment
+
+4. Create a `.env` file in the root directory and add your Telegram Bot API key and other required environment variables, like the one on `template.env`
+    ```dotenv
+    TELEGRAM_TOKEN=1234567890:aA0bB1cC2dD3eE4fF5gG6iI7hH8jJ9kK0lL
+    POSTGRES_HOST=localhost
+    POSTGRES_PORT=5432
+    POSTGRES_USERNAME=admin
+    POSTGRES_PASSWORD=password
+    POSTGRES_DB_NAME=database
+    ```
  
-4. Start the bot:
+5. Start the bot:
     ```bash
     yarn start
     ```
 
 ## Usage
 Once the bot is running, you can interact with it on Telegram using the following commands:
-- `/add [item1, item2, ...]` - Add items to your grocery list.
-- `/remove [item1, item2, ...]` - Remove items from your grocery list.
+- `/add item1, item2, ...` - Add items to your grocery list.
+- `/remove item1, item2, ...` - Remove items from your grocery list.
 - `/list` - Display the current grocery list.
 - `/clear` - Clear the grocery list.
 
