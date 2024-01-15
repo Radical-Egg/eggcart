@@ -10,8 +10,7 @@ class EggoList {
   async addItem(itemText) {
     
     try {
-      const newItem = await EggoListModel.create({ item: itemText });
-      return newItem;
+      return await EggoListModel.create({ item: itemText });
       
     } catch (error) {
       console.error(error);
@@ -22,8 +21,7 @@ class EggoList {
   async removeItem(itemId) {
     // Lógica para eliminar un ítem de la lista de compras
     try {
-      const result = await EggoListModel.destroy({ where: { id: itemId } });
-      return result;
+      return await EggoListModel.destroy({ where: { id: itemId } });
       
     } catch (error) {
       console.error(error);
@@ -34,8 +32,7 @@ class EggoList {
   async getItems() {
     // Lógica para obtener todos los ítems de la lista de compras
     try {
-      const items = await EggoListModel.findAll();
-      return items;
+      return await EggoListModel.findAll();
       
     } catch (error) {
       console.error(error);
