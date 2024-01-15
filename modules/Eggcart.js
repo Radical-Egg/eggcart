@@ -12,22 +12,29 @@ class EggCart {
         this.bot = new Telegraf(process.env.API_TOKEN)
     }
     addItem() {
-        this.bot.command('add', (ctx) => {
-            let iList = ctx.update.message.text
-            let remove_add = iList.slice(iList.indexOf(" ") + 1)
-            let item_list = remove_add.split(",")
-            let response = 'Okay! \n'
+        this.bot.command('add', async (ctx) => {
+            let iList = ctx.update.message.text;
+            let remove_add = iList.slice(iList.indexOf(" ") + 1);
+            let item_list = remove_add.split(",");
+            let response = 'Okay! \n';
+            
             for (let i = 0; i < item_list.length; i++) {
-                let item = {"item": item_list[i].trim()}
-                if (this.store.create(item) !== false) {
-                    response += `${item_list[i]},`
+                let item = {"item": item_list[i].trim()};
+                try {
+                    let success = await this.store.create(item);
+                    if (success) {
+                        response += `${item_list[i].trim()}, `;
+                    }
+                } catch (error) {
+                    console.error(error);
                 }
             }
-            response = response.slice(0, response.length - 1)
-            response += ' are on the shopping list!'
-            ctx.reply(response)
-        })
+            response = response.slice(0, response.length - 2); // Eliminar la última coma y espacio
+            response += ' are on the shopping list!';
+            ctx.reply(response);
+        });
     }
+
     deleteItem() {
         this.bot.command('remove', (ctx) => {
             let iList = ctx.update.message.text
