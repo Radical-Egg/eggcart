@@ -1,5 +1,5 @@
-const Supermarket = require('./Database.js')
-const { Telegraf } = require('telegraf')
+import Supermarket from './Database.js'
+import { Telegraf } from 'telegraf';
 
 /* TODO 
     set up logging 
@@ -103,4 +103,4 @@ class EggCart {
     connect() { this.bot.launch() }
 }
 
-module.exports = EggCart
+export default EggCart
