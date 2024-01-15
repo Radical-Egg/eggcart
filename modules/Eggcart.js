@@ -13,9 +13,7 @@ class EggCart {
     }
     addItem() {
         this.bot.command('add', (ctx) => {
-            let isApproved = this.approvedShoppers(ctx.from.id)
-
-            if (isApproved) {
+            if (true) {
                 let ilist = ctx.update.message.text
                 let remove_add = ilist.substr(ilist.indexOf(" ") + 1)
 
@@ -28,7 +26,7 @@ class EggCart {
                         response += `${item_list[i]},`
                     }
                 }
-                // remove last comma 
+                // remove last comma
                 response = response.substr(0, response.length - 1)
                 response += ' are on the shopping list!'
                 ctx.reply(response)
@@ -40,9 +38,7 @@ class EggCart {
     }
     deleteItem() {
         this.bot.command('remove', (ctx) => {
-            let isApproved = this.approvedShoppers(ctx.from.id)
-
-            if (isApproved) {
+            if (true) {
                 let ilist = ctx.update.message.text
                 let remove_add = ilist.substr(ilist.indexOf(" ") + 1)
 
@@ -66,9 +62,7 @@ class EggCart {
     }
     getList() {
         this.bot.command('list', (ctx) => {
-            let isApproved = this.approvedShoppers(ctx.from.id)
-
-            if (isApproved) {
+            if (true) {
                 let list = this.store.getTable().then((items) => {
                     let response = 'Grocery List\n'
                     let itemCount = 0
@@ -91,9 +85,7 @@ class EggCart {
     }
     clearList() {
         this.bot.command('clear', (ctx) => {
-            let isApproved = this.approvedShoppers(ctx.from.id)
-
-            if(isApproved) {
+            if(true) {
                 let list = this.store.getTable().then((items) => {
                     items.forEach((item) => {
                         this.store.delete(item)
@@ -110,9 +102,6 @@ class EggCart {
                 "Add an item : /add eggs, milk\nRemove an item : /remove eggs, milk\n Show the list : /list\nClear the list : /clear"
             )
         })
-    }
-    approvedShoppers(token) {
-        return true;
     }
     connect() { this.bot.launch() }
 }
