@@ -38,13 +38,13 @@ class EggCart {
                 for (let itemText of itemsToAdd) {
                     try {
                         await this.listController.addItem(itemText.trim());
-                        response += `${escapeMarkdownV2Characters(itemText.trim())}, `;
+                        response += `*${escapeMarkdownV2Characters(itemText.trim())}*, `;
                         
                     } catch (error) {
                         console.error(error);
                     }
                 }
-                response = response.slice(0, -2) + ' are on the shopping list\\.';
+                response = response.slice(0, -2) + ' is (are) on the shopping list\\.';
                 ctx.replyWithMarkdownV2(response);
             }
         });
@@ -64,17 +64,20 @@ class EggCart {
                 
                 for (let itemName of itemsToRemove) {
                     let escapedItemName = escapeMarkdownV2Characters(itemName.trim());
+                    
                     try {
                         const item = await this.listController.findItemByName(itemName.trim());
                         if (item) {
                             await this.listController.removeItem(item.id);
                             response += `Okay\\!\n*${escapedItemName}* removed from the shopping list\\.\n`;
+                            
                         } else {
                             response += `Oh\\!\n*${escapedItemName}* not found in the shopping list\\.\n`;
                         }
+                        
                     } catch (error) {
                         console.error(error);
-                        response += `Oh\\!\nError removing *${escapedItemName}*\\.\n`;
+                        response += `Oh\\!\nError removing *${escapedItemName}* from the shopping list\\.\n`;
                     }
                 }
                 
@@ -130,10 +133,10 @@ class EggCart {
                     for (const item of items) {
                         await this.listController.removeItem(item.id);
                     }
-                    ctx.reply("The shopping list has been cleared!");
+                    ctx.replyWithMarkdownV2("The shopping list has been cleared\\.");
                 } catch (error) {
                     console.error(error);
-                    ctx.reply("An error occurred while clearing the list.");
+                    ctx.replyWithMarkdownV2("An error occurred while clearing the list\\.");
                 }
             }
         });
@@ -149,8 +152,8 @@ class EggCart {
             
             if (messageText.includes(`@${this.botName}`) || chatType === 'private' || chatType === 'group') {
                 ctx.reply(
-                  "Add an item: /add eggs, milk\n" +
-                  "Remove an item: /remove eggs, milk\n" +
+                  "Add an item: /add Eggs, Milk\n" +
+                  "Remove an item: /remove Eggs, Milk\n" +
                   "Show the list: /list\n" +
                   "Clear the list: /clear"
                 );
