@@ -89,7 +89,7 @@ class EggCart {
             // Borrar el mensaje de confirmación y ejecutar la lógica de /list
             try {
                 await ctx.deleteMessage();
-                this.getListLogic(ctx);
+                await this.performGetList(ctx);
             } catch (error) {
                 console.error("Error deleting the message or showing the list:", error);
             }
@@ -173,35 +173,39 @@ class EggCart {
             const chatType = ctx.update.message.chat.type;
             
             if (messageText.includes(`@${this.botName}`) || chatType === 'private' || chatType === 'group') {
-                try {
-                    let items = await this.listController.getItems();
-                    let response = '*Grocery List*\n';
-                    
-                    if (items.length === 0) {
-                        response = "Nothing to shop for\\. \nTry adding eggs\\.";
-                        ctx.replyWithMarkdownV2(response);
-                        
-                    } else {
-                        items.forEach((item, index) => {
-                            response += `${index + 1}\\. ${escapeMarkdownV2Characters(item.item)}\n`;
-                        });
-                        
-                        const keyboard = Markup.inlineKeyboard([
-                            Markup.button.callback('✏️', 'edit'),
-                            Markup.button.callback('✔️', 'ok'),
-                            Markup.button.callback('🔥', 'clear')
-                        ]);
-                        
-                        ctx.replyWithMarkdownV2(response, keyboard);
-                    }
-                    
-                    
-                } catch (error) {
-                    console.error(error);
-                    ctx.replyWithMarkdownV2("An error occurred while getting the list\\.");
-                }
+                await this.performGetList(ctx);
             }
         });
+    }
+    
+    async performGetList(ctx) {
+        try {
+            let items = await this.listController.getItems();
+            let response = '*Grocery List*\n';
+            
+            if (items.length === 0) {
+                response = "Nothing to shop for\\. \nTry adding eggs\\.";
+                ctx.replyWithMarkdownV2(response);
+                
+            } else {
+                items.forEach((item, index) => {
+                    response += `${index + 1}\\. ${escapeMarkdownV2Characters(item.item)}\n`;
+                });
+                
+                const keyboard = Markup.inlineKeyboard([
+                    Markup.button.callback('✏️', 'edit'),
+                    Markup.button.callback('✔️', 'ok'),
+                    Markup.button.callback('🔥', 'clear')
+                ]);
+                
+                ctx.replyWithMarkdownV2(response, keyboard);
+            }
+            
+            
+        } catch (error) {
+            console.error(error);
+            ctx.replyWithMarkdownV2("An error occurred while getting the list\\.");
+        }
     }
     
     /**
