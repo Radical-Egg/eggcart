@@ -98,17 +98,19 @@ class EggCart {
             if (messageText.includes(`@${this.botName}`) || chatType === 'private' || chatType === 'group') {
                 try {
                     let items = await this.listController.getItems();
-                    let response = 'Grocery List\n';
+                    let response = '*Grocery List*\n';
+                    
                     items.forEach((item, index) => {
-                        response += `${index + 1}. ${item.item}\n`;
+                        response += `${index + 1}\\. ${escapeMarkdownV2Characters(item.item)}\n`;
                     });
+                    
                     if (items.length === 0) {
-                        response = "Nothing to shop for :o - try adding eggs";
+                        response = "Nothing to shop for\\. \nTry adding eggs\\.";
                     }
-                    ctx.reply(response);
+                    ctx.replyWithMarkdownV2(response);
                 } catch (error) {
                     console.error(error);
-                    ctx.reply("An error occurred while getting the list.");
+                    ctx.replyWithMarkdownV2("An error occurred while getting the list\\.");
                 }
             }
         });
