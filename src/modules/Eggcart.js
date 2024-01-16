@@ -167,6 +167,7 @@ class EggCart {
     connect() {
         this.bot.launch().then(() => {
             console.log('Bot launched successfully');
+            
         }).catch(error => {
             console.error('Error launching bot:', error);
         });
