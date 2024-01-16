@@ -22,6 +22,12 @@ function beautifyText(text) {
         trimmedText = trimmedText.slice(0, -1);
     }
     
+    trimmedText = trimmedText.trim();
+    
+    if (trimmedText.endsWith('.')) {
+        trimmedText = trimmedText.slice(0, -1);
+    }
+    
     // Capitalize the first letter
     return trimmedText.replace(/^\w/, c => c.toUpperCase());
 }
