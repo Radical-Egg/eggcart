@@ -4,6 +4,11 @@ const { Telegraf } = require('telegraf')
 const config = require(path.join(__dirname, '..', 'config'));
 const EggoListController = require(path.join(__dirname, '..', 'controllers', 'EggoList.js'));
 
+/**
+ * Escapes Markdown V2 characters in a given text.
+ * @param {string} text - The text to escape.
+ * @returns {string} The escaped text.
+ */
 function escapeMarkdownV2Characters(text) {
     return text.replace(/([_()*~`>#+-=|{}[\].!\\])/g, '\\$1');
 }
@@ -14,6 +19,9 @@ class EggCart {
         this.bot = new Telegraf(config.telegram.token);
     }
     
+    /**
+     * Add an item to the shopping list via the bot command.
+     */
     addItem() {
         this.bot.command('add', async (ctx) => {
             let messageText = ctx.update.message.text;
@@ -33,6 +41,9 @@ class EggCart {
         });
     }
     
+    /**
+     * Remove an item from the shopping list via the bot command.
+     */
     deleteItem() {
         this.bot.command('remove', async (ctx) => {
             let messageText = ctx.update.message.text;
@@ -62,9 +73,10 @@ class EggCart {
             ctx.replyWithMarkdownV2(response);
         });
     }
-
-
     
+    /**
+     * Retrieve the shopping list via the bot command.
+     */
     getList() {
         this.bot.command('list', async (ctx) => {
             try {
@@ -84,6 +96,9 @@ class EggCart {
         });
     }
     
+    /**
+     * Clear the shopping list via the bot command.
+     */
     clearList() {
         this.bot.command('clear', async (ctx) => {
             try {
@@ -99,6 +114,9 @@ class EggCart {
         });
     }
     
+    /**
+     * Provide help information via the bot command.
+     */
     help() {
         this.bot.help((ctx) => {
             ctx.reply(
@@ -111,6 +129,9 @@ class EggCart {
         });
     }
     
+    /**
+     * Launch the Telegram bot.
+     */
     connect() {
         this.bot.launch().then(() => {
             console.log('Bot launched successfully');
