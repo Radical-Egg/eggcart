@@ -55,6 +55,7 @@ class EggCart {
                     chat_id: ctx.chat.id,
                     message_id: ctx.update.callback_query.message.message_id,
                     reply_markup: { inline_keyboard: [] } });
+                
             } catch (error) {
                 console.error("Error editing message:", error);
             }
@@ -64,6 +65,7 @@ class EggCart {
             // Borrar el mensaje de la lista y mostrar el mensaje de confirmación
             try {
                 await ctx.deleteMessage();
+                
             } catch (error) {
                 console.error("Error deleting the message:", error);
             }
@@ -80,16 +82,17 @@ class EggCart {
             try {
                 await ctx.deleteMessage();
                 await this.performClearList(ctx);
+                
             } catch (error) {
                 console.error("Error en confirm_clear:", error);
             }
         });
         
         this.bot.action('cancel_clear', async (ctx) => {
-            // Borrar el mensaje de confirmación y ejecutar la lógica de /list
             try {
                 await ctx.deleteMessage();
                 await this.performGetList(ctx);
+                
             } catch (error) {
                 console.error("Error deleting the message or showing the list:", error);
             }
@@ -230,7 +233,9 @@ class EggCart {
             for (const item of items) {
                 await this.listController.removeItem(item.id);
             }
+            
             ctx.replyWithMarkdownV2("The shopping list has been cleared\\.");
+            
         } catch (error) {
             console.error(error);
             ctx.replyWithMarkdownV2("An error occurred while clearing the list\\.");
