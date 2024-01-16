@@ -51,8 +51,8 @@ class EggCart {
                 
                 for (let itemText of itemsToAdd) {
                     try {
-                        await this.listController.addItem(itemText.trim());
-                        response += `*${escapeMarkdownV2Characters(itemText.trim())}*, `;
+                        await this.listController.addItem(beautifyText(itemText.trim()));
+                        response += `*${escapeMarkdownV2Characters(beautifyText(itemText.trim()))}*, `;
                         
                     } catch (error) {
                         console.error(error);
@@ -77,10 +77,10 @@ class EggCart {
                 let response = '';
                 
                 for (let itemName of itemsToRemove) {
-                    let escapedItemName = escapeMarkdownV2Characters(itemName.trim());
+                    let escapedItemName = escapeMarkdownV2Characters(beautifyText(itemName.trim()));
                     
                     try {
-                        const item = await this.listController.findItemByName(itemName.trim());
+                        const item = await this.listController.findItemByName(beautifyText(itemName.trim()));
                         if (item) {
                             await this.listController.removeItem(item.id);
                             response += `Okay\\!\n*${escapedItemName}* removed from the shopping list\\.\n`;
