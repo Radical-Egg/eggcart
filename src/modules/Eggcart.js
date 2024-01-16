@@ -13,6 +13,20 @@ function escapeMarkdownV2Characters(text) {
     return text.replace(/([_()*~`>#+-=|{}[\].!\\])/g, '\\$1');
 }
 
+function beautifyText(text) {
+    // Remove leading and trailing whitespace
+    let trimmedText = text.trim();
+    
+    // Remove a trailing period if present
+    if (trimmedText.endsWith('.')) {
+        trimmedText = trimmedText.slice(0, -1);
+    }
+    
+    // Capitalize the first letter
+    return trimmedText.replace(/^\w/, c => c.toUpperCase());
+}
+
+
 class EggCart {
     constructor() {
         this.listController = new EggoListController();
