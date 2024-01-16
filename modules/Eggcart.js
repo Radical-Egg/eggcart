@@ -4,6 +4,10 @@ const { Telegraf } = require('telegraf')
 const config = require(path.join(__dirname, '..', 'config'));
 const EggoListController = require(path.join(__dirname, '..', 'controllers', 'EggoList.js'));
 
+function escapeMarkdownV2Characters(text) {
+    return text.replace(/([_()*~`>#+-=|{}[\].!\\])/g, '\\$1');
+}
+
 class EggCart {
     constructor() {
         this.listController = new EggoListController();
@@ -29,25 +33,37 @@ class EggCart {
         });
     }
     
-    // FIXME: Not working
     deleteItem() {
         this.bot.command('remove', async (ctx) => {
             let messageText = ctx.update.message.text;
             let itemsToRemove = messageText.slice(messageText.indexOf(" ") + 1).split(",");
-            let response = 'Okay! \n';
+            let response = '';
             
-            for (let itemText of itemsToRemove) {
+            for (let itemName of itemsToRemove) {
+                let escapedItemName = escapeMarkdownV2Characters(itemName.trim());
                 try {
-                    await this.listController.removeItem(itemText.trim());
-                    response += `${itemText.trim()}, `;
+                    const item = await this.listController.findItemByName(itemName.trim());
+                    if (item) {
+                        await this.listController.removeItem(item.id);
+                        response += `Okay\\!\n*${escapedItemName}* removed from the shopping list\\.\n`;
+                    } else {
+                        response += `Oh\\!\n*${escapedItemName}* not found in the shopping list\\.\n`;
+                    }
                 } catch (error) {
                     console.error(error);
+                    response += `Oh\\!\nError removing *${escapedItemName}*\\.\n`;
                 }
             }
-            response = response.slice(0, -2) + ' is no longer on the shopping list!';
-            ctx.reply(response);
+            
+            if (response === '') {
+                response = "No items specified for removal\\.";
+            }
+            
+            ctx.replyWithMarkdownV2(response);
         });
     }
+
+
     
     getList() {
         this.bot.command('list', async (ctx) => {

@@ -18,11 +18,18 @@ class EggoList {
     }
   }
   
+  async findItemByName(itemName) {
+    try {
+      return await EggoListModel.findOne({ where: { item: itemName } });
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+  
   async removeItem(itemId) {
-    // Lógica para eliminar un ítem de la lista de compras
     try {
       return await EggoListModel.destroy({ where: { id: itemId } });
-      
     } catch (error) {
       console.error(error);
       throw error;
@@ -30,7 +37,6 @@ class EggoList {
   }
   
   async getItems() {
-    // Lógica para obtener todos los ítems de la lista de compras
     try {
       return await EggoListModel.findAll();
       
@@ -41,19 +47,16 @@ class EggoList {
   }
   
   async updateItem(itemId, newItemData) {
-    // Lógica para actualizar un ítem de la lista de compras
     try {
       const item = await EggoListModel.findByPk(itemId);
       if (!item) {
         throw new Error('Item not found');
       }
       
-      // Actualiza los campos necesarios. Ejemplo:
-      item.item = newItemData.item; // Suponiendo que 'item' es un campo a actualizar
-      // Si hay más campos a actualizar, repite el proceso para cada uno.
+      item.item = newItemData.item;
       
-      await item.save(); // Guarda los cambios en la base de datos
-      return item; // Retorna el ítem actualizado
+      await item.save();
+      return item;
       
     } catch (error) {
       console.error(error);
