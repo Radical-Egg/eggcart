@@ -33,19 +33,19 @@ class EggCart {
             
             if (messageText.includes(`@${this.botName}`) || chatType === 'private' || chatType === 'group') {
                 let itemsToAdd = messageText.slice(messageText.indexOf(" ") + 1).split(",");
-                let response = 'Okay! \n';
-                
+                let response = 'Okay\\! \n';
                 
                 for (let itemText of itemsToAdd) {
                     try {
                         await this.listController.addItem(itemText.trim());
-                        response += `${itemText.trim()}, `;
+                        response += `${escapeMarkdownV2Characters(itemText.trim())}, `;
+                        
                     } catch (error) {
                         console.error(error);
                     }
                 }
-                response = response.slice(0, -2) + ' are on the shopping list!';
-                ctx.reply(response);
+                response = response.slice(0, -2) + ' are on the shopping list\\.';
+                ctx.replyWithMarkdownV2(response);
             }
         });
     }
