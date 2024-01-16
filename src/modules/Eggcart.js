@@ -13,6 +13,20 @@ function escapeMarkdownV2Characters(text) {
     return text.replace(/([_()*~`>#+-=|{}[\].!\\])/g, '\\$1');
 }
 
+function beautifyText(text) {
+    // Remove leading and trailing whitespace
+    let trimmedText = text.trim();
+    
+    // Remove a trailing period if present
+    if (trimmedText.endsWith('.')) {
+        trimmedText = trimmedText.slice(0, -1);
+    }
+    
+    // Capitalize the first letter
+    return trimmedText.replace(/^\w/, c => c.toUpperCase());
+}
+
+
 class EggCart {
     constructor() {
         this.listController = new EggoListController();
@@ -33,19 +47,20 @@ class EggCart {
             
             if (messageText.includes(`@${this.botName}`) || chatType === 'private' || chatType === 'group') {
                 let itemsToAdd = messageText.slice(messageText.indexOf(" ") + 1).split(",");
-                let response = 'Okay! \n';
-                
+                let response = 'Okay\\! \n';
                 
                 for (let itemText of itemsToAdd) {
                     try {
-                        await this.listController.addItem(itemText.trim());
-                        response += `${itemText.trim()}, `;
+                        await this.listController.addItem(beautifyText(itemText.trim()));
+                        response += `*${escapeMarkdownV2Characters(beautifyText(itemText.trim()))}*, `;
+                        
                     } catch (error) {
                         console.error(error);
                     }
                 }
-                response = response.slice(0, -2) + ' are on the shopping list!';
-                ctx.reply(response);
+                
+                response = response.slice(0, -2) + ' is \\(are\\) on the shopping list\\.';
+                ctx.replyWithMarkdownV2(response);
             }
         });
     }
@@ -63,18 +78,21 @@ class EggCart {
                 let response = '';
                 
                 for (let itemName of itemsToRemove) {
-                    let escapedItemName = escapeMarkdownV2Characters(itemName.trim());
+                    let escapedItemName = escapeMarkdownV2Characters(beautifyText(itemName.trim()));
+                    
                     try {
-                        const item = await this.listController.findItemByName(itemName.trim());
+                        const item = await this.listController.findItemByName(beautifyText(itemName.trim()));
                         if (item) {
                             await this.listController.removeItem(item.id);
                             response += `Okay\\!\n*${escapedItemName}* removed from the shopping list\\.\n`;
+                            
                         } else {
                             response += `Oh\\!\n*${escapedItemName}* not found in the shopping list\\.\n`;
                         }
+                        
                     } catch (error) {
                         console.error(error);
-                        response += `Oh\\!\nError removing *${escapedItemName}*\\.\n`;
+                        response += `Oh\\!\nError removing *${escapedItemName}* from the shopping list\\.\n`;
                     }
                 }
                 
@@ -98,17 +116,19 @@ class EggCart {
             if (messageText.includes(`@${this.botName}`) || chatType === 'private' || chatType === 'group') {
                 try {
                     let items = await this.listController.getItems();
-                    let response = 'Grocery List\n';
+                    let response = '*Grocery List*\n';
+                    
                     items.forEach((item, index) => {
-                        response += `${index + 1}. ${item.item}\n`;
+                        response += `${index + 1}\\. ${escapeMarkdownV2Characters(item.item)}\n`;
                     });
+                    
                     if (items.length === 0) {
-                        response = "Nothing to shop for :o - try adding eggs";
+                        response = "Nothing to shop for\\. \nTry adding eggs\\.";
                     }
-                    ctx.reply(response);
+                    ctx.replyWithMarkdownV2(response);
                 } catch (error) {
                     console.error(error);
-                    ctx.reply("An error occurred while getting the list.");
+                    ctx.replyWithMarkdownV2("An error occurred while getting the list\\.");
                 }
             }
         });
@@ -128,15 +148,15 @@ class EggCart {
                     for (const item of items) {
                         await this.listController.removeItem(item.id);
                     }
-                    ctx.reply("The shopping list has been cleared!");
+                    ctx.replyWithMarkdownV2("The shopping list has been cleared\\.");
                 } catch (error) {
                     console.error(error);
-                    ctx.reply("An error occurred while clearing the list.");
+                    ctx.replyWithMarkdownV2("An error occurred while clearing the list\\.");
                 }
             }
         });
     }
-    
+
     /**
      * Provide help information via the bot command.
      */
@@ -147,8 +167,8 @@ class EggCart {
             
             if (messageText.includes(`@${this.botName}`) || chatType === 'private' || chatType === 'group') {
                 ctx.reply(
-                  "Add an item: /add eggs, milk\n" +
-                  "Remove an item: /remove eggs, milk\n" +
+                  "Add an item: /add Eggs, Milk\n" +
+                  "Remove an item: /remove Eggs, Milk\n" +
                   "Show the list: /list\n" +
                   "Clear the list: /clear"
                 );
@@ -162,6 +182,7 @@ class EggCart {
     connect() {
         this.bot.launch().then(() => {
             console.log('Bot launched successfully');
+            
         }).catch(error => {
             console.error('Error launching bot:', error);
         });
