@@ -1,16 +1,21 @@
 const dotenv = require('dotenv');
 
 
-// Trae las variables de entorno
+// Load environment variables from .env file
 dotenv.config({
   path: '.env',
 });
 
+// Validate essential PostgreSQL environment variables
 if (!process.env.POSTGRES_USERNAME || !process.env.POSTGRES_PASSWORD) {
   throw new Error('POSTGRES_USERNAME and POSTGRES_PASSWORD are required');
 }
 
-// "Clase" de datos con configuraciones por defecto
+/**
+ * Base configuration for PostgreSQL connection.
+ * Includes default values and environment variable based settings.
+ * @type {Object}
+ */
 const baseConfig = {
   username: process.env.POSTGRES_USERNAME,
   password: process.env.POSTGRES_PASSWORD,
@@ -19,6 +24,11 @@ const baseConfig = {
   dialect: 'postgres'
 };
 
+/**
+ * Database configurations for different environments (default, development, test, production).
+ * Each configuration extends the base configuration with environment-specific overrides.
+ * @type {Object}
+ */
 const config = {
   default: {
     ...baseConfig
