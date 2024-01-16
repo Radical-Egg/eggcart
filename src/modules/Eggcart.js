@@ -33,6 +33,57 @@ function beautifyText(text) {
 }
 
 
+function generateInlineKeyboard(items, currentPage = 0) {
+    // Determinar el número de elementos y el número de columnas
+    const itemCount = items.length;
+    let columns;
+    let paginated = false;
+    let buttons = [];
+    
+    if (itemCount < 9) {
+        columns = [0, 1, 2, 4, 5].includes(itemCount) ? 2 : 3;
+    } else {
+        columns = 3;
+        paginated = true;
+    }
+    
+    // Añadir los botones de los elementos
+    const itemsPerPage = 9;
+    
+    if (paginated) {
+        const pageStart = currentPage * itemsPerPage;
+        const pageEnd = pageStart + itemsPerPage;
+        buttons = items.slice(pageStart, pageEnd).map(item =>
+          Markup.button.callback(item.item, `delete_item_${item.id}`));
+    } else {
+        buttons = items.map(item =>
+          Markup.button.callback(item.item, `delete_item_${item.id}`));
+    }
+    
+    // Agregar botones de navegación si es necesario
+    if (paginated) {
+        // Agregar botón para ir a la página anterior si no estamos en la primera página
+        if (currentPage > 0) {
+            buttons.push(Markup.button.callback('⬅️', `prev_page_${currentPage - 1}`));
+        }
+        
+        // Agregar botón de retorno al menú principal
+        buttons.push(Markup.button.callback('↩️', 'go_back'));
+        
+        // Agregar botón para ir a la próxima página si hay más elementos
+        if (itemCount > (currentPage + 1) * itemsPerPage) {
+            buttons.push(Markup.button.callback('➡️', `next_page_${currentPage + 1}`));
+        }
+    } else {
+        // Solo añadir botón de retorno al menú principal
+        buttons.push(Markup.button.callback('↩️', 'go_back'));
+    }
+    
+    // Crear el teclado con la cantidad de columnas determinada por la lógica anterior
+    const keyboard = Markup.inlineKeyboard(buttons, { columns: columns });
+    return keyboard;
+}
+
 class EggCart {
     constructor() {
         this.listController = new EggoListController();
@@ -43,10 +94,56 @@ class EggCart {
         });
     }
     
-    
     setupButtonHandlers() {
-        this.bot.action('edit', async (ctx) => {
-            // Lógica para manejar la edición de un elemento
+        this.bot.action(/prev_page_(\d+)/, async (ctx) => {
+            const currentPage = parseInt(ctx.match[1]); // Obtener el número de página del callback
+            try {
+                const items = await this.listController.getItems();
+                const keyboard = generateInlineKeyboard(items, currentPage);
+                
+                // Aquí puedes editar el mensaje actual o enviar uno nuevo con el teclado actualizado
+                await ctx.editMessageText("Which one do you want to delete?", { reply_markup: keyboard });
+                
+            } catch (error) {
+                console.error("Error en prev_page:", error);
+                await ctx.reply("An error occurred.");
+            }
+        });
+        
+        this.bot.action(/next_page_(\d+)/, async (ctx) => {
+            const currentPage = parseInt(ctx.match[1]); // Obtener el número de página del callback
+            
+            try {
+                const items = await this.listController.getItems();
+                const keyboard = generateInlineKeyboard(items, currentPage);
+                
+                // Aquí puedes editar el mensaje actual o enviar uno nuevo con el teclado actualizado
+                await ctx.editMessageText("Which one do you want to delete?", { reply_markup: keyboard });
+                
+            } catch (error) {
+                console.error("Error en next_page:", error);
+                await ctx.reply("An error occurred.");
+            }
+        });
+        
+        this.bot.action('check_item', async (ctx) => {
+            const currentPage = 0;
+            try {
+                // Eliminar el mensaje actual con la lista de compras
+                await ctx.deleteMessage();
+                
+                // Consultar la lista de compras actual
+                const items = await this.listController.getItems();
+                
+                const keyboard = generateInlineKeyboard(items, currentPage);
+                
+                // Responder con un nuevo mensaje y el teclado
+                await ctx.reply("Which one do you want to delete?", keyboard);
+                
+            } catch (error) {
+                console.error("Error en check_item:", error);
+                await ctx.reply("An error occurred.");
+            }
         });
         
         this.bot.action('ok', async (ctx) => {
@@ -196,7 +293,7 @@ class EggCart {
                 });
                 
                 const keyboard = Markup.inlineKeyboard([
-                    Markup.button.callback('✏️', 'edit'),
+                    Markup.button.callback('✏️', 'check_item'),
                     Markup.button.callback('✔️', 'ok'),
                     Markup.button.callback('🔥', 'clear')
                 ]);
