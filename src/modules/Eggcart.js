@@ -58,7 +58,8 @@ class EggCart {
                         console.error(error);
                     }
                 }
-                response = response.slice(0, -2) + ' is (are) on the shopping list\\.';
+                
+                response = response.slice(0, -2) + ' is \\(are\\) on the shopping list\\.';
                 ctx.replyWithMarkdownV2(response);
             }
         });
@@ -155,7 +156,7 @@ class EggCart {
             }
         });
     }
-    
+
     /**
      * Provide help information via the bot command.
      */
