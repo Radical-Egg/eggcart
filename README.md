@@ -60,4 +60,4 @@ Once the bot is running, you can interact with it on Telegram using the followin
 - Primary Contributor and Maintainer: ljgonzalez1
 
 ## License
-EggCart is released under the [ISC License](LICENSE). See the LICENSE file for more details.
+EggCart is released under the [ISC License](LICENSE.txt). See the LICENSE file for more details.
