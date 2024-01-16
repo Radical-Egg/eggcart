@@ -1,5 +1,5 @@
 const path = require('path');
-const { Telegraf } = require('telegraf')
+const { Telegraf, Markup } = require('telegraf')
 
 const config = require(path.join(__dirname, '..', 'config'));
 const EggoListController = require(path.join(__dirname, '..', 'controllers', 'EggoList.js'));
@@ -37,6 +37,59 @@ class EggCart {
         });
     }
     
+    
+    setupButtonHandlers() {
+        this.bot.action('edit', async (ctx) => {
+            // Lógica para manejar la edición de un elemento
+        });
+        
+        this.bot.action('ok', async (ctx) => {
+            try {
+                await ctx.editMessageReplyMarkup({
+                    chat_id: ctx.chat.id,
+                    message_id: ctx.update.callback_query.message.message_id,
+                    reply_markup: { inline_keyboard: [] } });
+            } catch (error) {
+                console.error("Error editing message:", error);
+            }
+        });
+        
+        this.bot.action('clear', async (ctx) => {
+            // Borrar el mensaje de la lista y mostrar el mensaje de confirmación
+            try {
+                await ctx.deleteMessage();
+            } catch (error) {
+                console.error("Error deleting the message:", error);
+            }
+            
+            const confirmButton = Markup.button.callback('✔️', 'confirm_clear');
+            const cancelButton = Markup.button.callback('❌', 'cancel_clear');
+            const confirmationKeyboard = Markup.inlineKeyboard([confirmButton, cancelButton]);
+            
+            ctx.reply("Are you sure you want to delete the whole list?", confirmationKeyboard);
+        });
+        
+        this.bot.action('confirm_clear', async (ctx) => {
+            console.log("Confirm clear action triggered"); // Registro de depuración
+            try {
+                await ctx.deleteMessage();
+                await this.performClearList(ctx);
+            } catch (error) {
+                console.error("Error en confirm_clear:", error);
+            }
+        });
+        
+        this.bot.action('cancel_clear', async (ctx) => {
+            // Borrar el mensaje de confirmación y ejecutar la lógica de /list
+            try {
+                await ctx.deleteMessage();
+                this.getListLogic(ctx);
+            } catch (error) {
+                console.error("Error deleting the message or showing the list:", error);
+            }
+        });
+    }
+    
     /**
      * Add an item to the shopping list via the bot command.
      */
@@ -59,7 +112,7 @@ class EggCart {
                     }
                 }
                 
-                response = response.slice(0, -2) + ' is \\(are\\) on the shopping list\\.';
+                response = response.slice(0, -2) + ' is \\(are\\) now on the shopping list\\.';
                 ctx.replyWithMarkdownV2(response);
             }
         });
@@ -118,14 +171,25 @@ class EggCart {
                     let items = await this.listController.getItems();
                     let response = '*Grocery List*\n';
                     
-                    items.forEach((item, index) => {
-                        response += `${index + 1}\\. ${escapeMarkdownV2Characters(item.item)}\n`;
-                    });
-                    
                     if (items.length === 0) {
                         response = "Nothing to shop for\\. \nTry adding eggs\\.";
+                        ctx.replyWithMarkdownV2(response);
+                        
+                    } else {
+                        items.forEach((item, index) => {
+                            response += `${index + 1}\\. ${escapeMarkdownV2Characters(item.item)}\n`;
+                        });
+                        
+                        const keyboard = Markup.inlineKeyboard([
+                            Markup.button.callback('✏️', 'edit'),
+                            Markup.button.callback('✔️', 'ok'),
+                            Markup.button.callback('🔥', 'clear')
+                        ]);
+                        
+                        ctx.replyWithMarkdownV2(response, keyboard);
                     }
-                    ctx.replyWithMarkdownV2(response);
+                    
+                    
                 } catch (error) {
                     console.error(error);
                     ctx.replyWithMarkdownV2("An error occurred while getting the list\\.");
@@ -143,20 +207,27 @@ class EggCart {
             const chatType = ctx.update.message.chat.type;
             
             if (messageText.includes(`@${this.botName}`) || chatType === 'private' || chatType === 'group') {
-                try {
-                    let items = await this.listController.getItems();
-                    for (const item of items) {
-                        await this.listController.removeItem(item.id);
-                    }
-                    ctx.replyWithMarkdownV2("The shopping list has been cleared\\.");
-                } catch (error) {
-                    console.error(error);
-                    ctx.replyWithMarkdownV2("An error occurred while clearing the list\\.");
-                }
+                await this.performClearList(ctx);
             }
         });
+        
+        this.setupButtonHandlers();
     }
-
+    
+    async performClearList(ctx) {
+        try {
+            let items = await this.listController.getItems();
+            for (const item of items) {
+                await this.listController.removeItem(item.id);
+            }
+            ctx.replyWithMarkdownV2("The shopping list has been cleared\\.");
+        } catch (error) {
+            console.error(error);
+            ctx.replyWithMarkdownV2("An error occurred while clearing the list\\.");
+        }
+    }
+    
+    
     /**
      * Provide help information via the bot command.
      */
