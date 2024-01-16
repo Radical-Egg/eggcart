@@ -1,6 +1,12 @@
 'use strict';
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
+  /**
+   * Run the migration to create the table.
+   * @param {import('sequelize').QueryInterface} queryInterface - The interface to handle SQL queries.
+   * @param {import('sequelize').Sequelize} Sequelize - Sequelize library.
+   */
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('EggoLists', {
       id: {
@@ -24,6 +30,12 @@ module.exports = {
       }
     });
   },
+  
+  /**
+   * Revert the migration by dropping the 'EggoLists' table.
+   * @param {import('sequelize').QueryInterface} queryInterface - The interface to handle SQL queries.
+   * @param {import('sequelize').Sequelize} Sequelize - Sequelize library.
+   */
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('EggoLists');
   }

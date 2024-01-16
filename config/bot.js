@@ -1,35 +1,41 @@
 const dotenv = require('dotenv');
 
-
-// Trae las variables de entorno
+// Configure dotenv to read the .env file
 dotenv.config({
   path: '.env',
 });
 
+/**
+ * Base configuration object containing common configuration values.
+ * Currently, it includes only the Telegram token.
+ * @type {Object}
+ */
 const baseConfig = {
   token: process.env.TELEGRAM_TOKEN
 };
 
 /**
- * Configuraciones de la aplicación, utilizando variables de entorno cuando estén disponibles.
- * Las claves de nivel superior representan diferentes entornos
- * (por ejemplo, 'default', 'production', 'development', etc.).
- * Las claves de segundo nivel son las configuraciones específicas para ese entorno.
- * @type {Object.<string, Object.<string, string | number>>}
- * -- ChatGPT
+ * Complete configuration object for different environments.
+ * This object contains separate configurations for default, development,
+ * testing, and production environments. Each environment configuration
+ * extends the base configuration.
+ * @type {Object}
  */
-// Configuraciones usando vars de entorno
 const config = {
   default: {
+    // Default environment configuration
     ...baseConfig
   },
   development: {
+    // Development environment configuration
     ...baseConfig
   },
   testing: {
+    // Testing environment configuration
     ...baseConfig
   },
   production: {
+    // Production environment configuration
     ...baseConfig
   }
 };

@@ -1,12 +1,18 @@
 const path = require('path');
 const db = require(path.join(__dirname, '..', 'models'));
 
+// Reference to the EggoList model from the database models
 const EggoListModel = db.EggoList;
 
 class EggoList {
   constructor() {
   }
   
+  /**
+   * Add an item to the list.
+   * @param {string} itemText - Text of the item to add.
+   * @returns {Promise<Object>} The created item.
+   */
   async addItem(itemText) {
     
     try {
@@ -18,6 +24,11 @@ class EggoList {
     }
   }
   
+  /**
+   * Find an item by its name.
+   * @param {string} itemName - Name of the item to find.
+   * @returns {Promise<Object|null>} The found item or null if not found.
+   */
   async findItemByName(itemName) {
     try {
       return await EggoListModel.findOne({ where: { item: itemName } });
@@ -27,6 +38,11 @@ class EggoList {
     }
   }
   
+  /**
+   * Remove an item from the list.
+   * @param {number} itemId - ID of the item to remove.
+   * @returns {Promise<number>} Number of items removed.
+   */
   async removeItem(itemId) {
     try {
       return await EggoListModel.destroy({ where: { id: itemId } });
@@ -36,6 +52,10 @@ class EggoList {
     }
   }
   
+  /**
+   * Get all items from the list.
+   * @returns {Promise<Array>} List of items.
+   */
   async getItems() {
     try {
       return await EggoListModel.findAll();
@@ -46,6 +66,12 @@ class EggoList {
     }
   }
   
+  /**
+   * Update an item in the list.
+   * @param {number} itemId - ID of the item to update.
+   * @param {Object} newItemData - New data for the item.
+   * @returns {Promise<Object>} The updated item.
+   */
   async updateItem(itemId, newItemData) {
     try {
       const item = await EggoListModel.findByPk(itemId);
