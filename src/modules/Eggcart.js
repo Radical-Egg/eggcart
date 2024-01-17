@@ -119,6 +119,23 @@ class EggCart {
             }
         });
         
+        this.bot.action(/^delete_item_(\d+)$/, async (ctx) => {
+            const itemId = ctx.match[1];
+            
+            try {
+                const item = await this.listController.findItemById(itemId);
+                if (item) {
+                    await ctx.deleteMessage();
+                    await this.performDeleteItem(item.item)(ctx);
+                } else {
+                    await ctx.reply("Item not found.");
+                }
+            } catch (error) {
+                console.error("Error en delete_item:", error);
+                await ctx.reply("An error occurred while trying to delete the item.");
+            }
+        });
+        
         this.bot.action(/next_page_(\d+)/, async (ctx) => {
             const currentPageIndex = parseInt(ctx.match[1]);
             const itemsPerPage = 9; // Este es el número de elementos que deseas mostrar por página
@@ -269,33 +286,10 @@ class EggCart {
             
             if (messageText.includes(`@${this.botName}`) || chatType === 'private' || chatType === 'group') {
                 let itemsToRemove = messageText.slice(messageText.indexOf(" ") + 1).split(",");
-                let response = '';
-                
                 for (let itemName of itemsToRemove) {
-                    let escapedItemName = escapeMarkdownV2Characters(beautifyText(itemName.trim()));
-                    
-                    try {
-                        const item = await this.listController.findItemByName(beautifyText(itemName.trim()));
-                        if (item) {
-                            await this.listController.removeItem(item.id);
-                            response += `Okay\\!\n*${escapedItemName}* removed from the shopping list\\.\n`;
-                            
-                        } else {
-                            response += `Oh\\!\n*${escapedItemName}* not found in the shopping list\\.\n`;
-                        }
-                        
-                    } catch (error) {
-                        console.error(error);
-                        response += `Oh\\!\nError removing *${escapedItemName}* from the shopping list\\.\n`;
-                    }
+                    await this.performDeleteItem(itemName.trim())(ctx);
                 }
-                
-                if (response === '') {
-                    response = "No items specified for removal\\.";
-                }
-                
-                ctx.replyWithMarkdownV2(response);
-                }
+            }
         });
     }
     
@@ -396,6 +390,22 @@ class EggCart {
         }
     }
     
+    start() {
+        this.bot.command('start', async (ctx) => {
+            const messageText = ctx.update.message.text;
+            const chatType = ctx.update.message.chat.type;
+            
+            if (messageText.includes(`@${this.botName}`) || chatType === 'private' || chatType === 'group') {
+                ctx.reply(
+                  "Add an item: /add Eggs, Milk, Cream\n" +
+                  "Remove an item: /remove Eggs, Milk\n" +
+                  "Show the list: /list\n" +
+                  "Clear the list: /clear\n" +
+                  "This menu: /help"
+                );
+            }
+        });
+    }
     
     /**
      * Provide help information via the bot command.
@@ -407,7 +417,7 @@ class EggCart {
             
             if (messageText.includes(`@${this.botName}`) || chatType === 'private' || chatType === 'group') {
                 ctx.reply(
-                  "Add an item: /add Eggs, Milk\n" +
+                  "Add an item: /add Eggs, Milk, Cream\n" +
                   "Remove an item: /remove Eggs, Milk\n" +
                   "Show the list: /list\n" +
                   "Clear the list: /clear"

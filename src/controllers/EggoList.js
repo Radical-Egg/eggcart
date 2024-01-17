@@ -66,6 +66,13 @@ class EggoList {
     }
   }
   
+  async findItemById(itemId) {
+    const item = await EggoListModel.findOne({
+      where: { id: itemId }
+    });
+    return item;
+  }
+  
   /**
    * Update an item in the list.
    * @param {number} itemId - ID of the item to update.
