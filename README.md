@@ -14,7 +14,7 @@ EggCart is a Telegram Bot designed to manage your grocery list efficiently. Buil
 
 ## Screenshot
 
-<img alt="AppScreenshot" src="assets/egg_cart_screenshot.jpg" width="512">
+<img alt="AppScreenshot" src="assets/egg_cart_screenshot.png" width="512">
 
 ## Installation
 To get EggCart up and running, follow these steps:
