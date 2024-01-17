@@ -9,15 +9,30 @@ class EggoList {
   }
   
   /**
-   * Add an item to the list.
-   * @param {string} itemText - Text of the item to add.
-   * @returns {Promise<Object>} The created item.
+   * Añade un artículo a la lista de un chat específico.
+   * @param {number} chatListId - ID de la lista de chat.
+   * @param {string} itemText - Texto del artículo a añadir.
+   * @returns {Promise<Object>} El artículo creado.
    */
-  async addItem(itemText) {
-    
+  async addItem(chatListId, itemText) {
     try {
-      return await EggoListModel.create({ item: itemText });
-      
+      return await EggoListModel.create({ chatListId, item: itemText });
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+  
+  
+  /**
+   * Encuentra un artículo por su nombre en una lista de chat específica.
+   * @param {number} chatListId - ID de la lista de chat.
+   * @param {string} itemName - Nombre del artículo a encontrar.
+   * @returns {Promise<Object|null>} El artículo encontrado o null si no se encuentra.
+   */
+  async findItemByName(chatListId, itemName) {
+    try {
+      return await EggoListModel.findOne({ where: { chatListId, item: itemName } });
     } catch (error) {
       console.error(error);
       throw error;
@@ -25,23 +40,9 @@ class EggoList {
   }
   
   /**
-   * Find an item by its name.
-   * @param {string} itemName - Name of the item to find.
-   * @returns {Promise<Object|null>} The found item or null if not found.
-   */
-  async findItemByName(itemName) {
-    try {
-      return await EggoListModel.findOne({ where: { item: itemName } });
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Remove an item from the list.
-   * @param {number} itemId - ID of the item to remove.
-   * @returns {Promise<number>} Number of items removed.
+   * Elimina un artículo de la lista de un chat específico.
+   * @param {number} itemId - ID del artículo a eliminar.
+   * @returns {Promise<number>} Número de artículos eliminados.
    */
   async removeItem(itemId) {
     try {
@@ -53,13 +54,13 @@ class EggoList {
   }
   
   /**
-   * Get all items from the list.
-   * @returns {Promise<Array>} List of items.
+   * Obtiene todos los artículos de la lista de un chat específico.
+   * @param {number} chatListId - ID de la lista de chat.
+   * @returns {Promise<Array>} Lista de artículos.
    */
-  async getItems() {
+  async getItems(chatListId) {
     try {
-      return await EggoListModel.findAll();
-      
+      return await EggoListModel.findAll({ where: { chatListId } });
     } catch (error) {
       console.error(error);
       throw error;
@@ -67,23 +68,19 @@ class EggoList {
   }
   
   /**
-   * Finds an item in the database by its ID.
-   * This function queries the Eggolist model to find a single item that matches the given ID.
-   *
-   * @param {number} itemId - The ID of the item to be found.
-   * @returns {Promise<Object|null>} A promise that resolves to the found item or null if no item is found.
+   * Encuentra un artículo en la base de datos por su ID.
+   * @param {number} itemId - ID del artículo a encontrar.
+   * @returns {Promise<Object|null>} El artículo encontrado o null si no se encuentra.
    */
   async findItemById(itemId) {
-    return await EggoListModel.findOne({
-      where: {id: itemId}
-    });
+    return await EggoListModel.findOne({ where: { id: itemId } });
   }
   
   /**
-   * Update an item in the list.
-   * @param {number} itemId - ID of the item to update.
-   * @param {Object} newItemData - New data for the item.
-   * @returns {Promise<Object>} The updated item.
+   * Actualiza un artículo en la lista.
+   * @param {number} itemId - ID del artículo a actualizar.
+   * @param {Object} newItemData - Nuevos datos para el artículo.
+   * @returns {Promise<Object>} El artículo actualizado.
    */
   async updateItem(itemId, newItemData) {
     try {
@@ -93,10 +90,8 @@ class EggoList {
       }
       
       item.item = newItemData.item;
-      
       await item.save();
       return item;
-      
     } catch (error) {
       console.error(error);
       throw error;
