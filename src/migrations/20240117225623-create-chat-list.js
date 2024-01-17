@@ -10,7 +10,8 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       chat_id: {
-        type: Sequelize.BIGINT
+        type: Sequelize.BIGINT,
+        allowNull: false
       },
       createdAt: {
         allowNull: false,
