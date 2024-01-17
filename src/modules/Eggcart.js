@@ -53,9 +53,11 @@ function generateInlineKeyboard(items, currentPage = 0) {
     if (paginated) {
         const pageStart = currentPage * itemsPerPage;
         const pageEnd = pageStart + itemsPerPage;
+        items.slice(pageStart, pageEnd).map(item => console.log(item));
         buttons = items.slice(pageStart, pageEnd).map(item =>
           Markup.button.callback(item.item, `delete_item_${item.id}`));
     } else {
+        items.map(item => console.log(item));
         buttons = items.map(item =>
           Markup.button.callback(item.item, `delete_item_${item.id}`));
     }
@@ -71,8 +73,8 @@ function generateInlineKeyboard(items, currentPage = 0) {
         buttons.push(Markup.button.callback('↩️', 'go_back'));
         
         // Agregar botón para ir a la próxima página si hay más elementos
-        if (itemCount > (currentPage + 1) * itemsPerPage) {
-            buttons.push(Markup.button.callback('➡️', `next_page_${currentPage + 1}`));
+        if (itemCount > currentPage * itemsPerPage) {
+            buttons.push(Markup.button.callback('➡️', `next_page_${currentPage}`));
         }
     } else {
         // Solo añadir botón de retorno al menú principal
@@ -110,20 +112,34 @@ class EggCart {
         });
         
         this.bot.action(/next_page_(\d+)/, async (ctx) => {
-            const currentPage = parseInt(ctx.match[1]); // Obtener el número de página del callback
+            const currentPageIndex = parseInt(ctx.match[1]);
+            const itemsPerPage = 9; // Este es el número de elementos que deseas mostrar por página
             
             try {
                 const items = await this.listController.getItems();
-                const keyboard = generateInlineKeyboard(items, currentPage);
+                const totalPages = Math.ceil(items.length / itemsPerPage);
+                const nextPageIndex = currentPageIndex + 1; // Calcula el índice de la próxima página
                 
-                // Aquí puedes editar el mensaje actual o enviar uno nuevo con el teclado actualizado
-                await ctx.editMessageText("Which one do you want to delete?", { reply_markup: keyboard });
+                // Si la página siguiente excede el total de páginas, no hagas nada
+                if (nextPageIndex >= totalPages) return;
+                
+                // Generar un nuevo teclado para la página siguiente
+                const newKeyboard = generateInlineKeyboard(items, nextPageIndex);
+                
+                // Borrar el mensaje actual y enviar un nuevo mensaje con el teclado de la página siguiente
+                await ctx.deleteMessage();
+                await ctx.reply("Which one do you want to delete?", {
+                    reply_markup: newKeyboard.reply_markup
+                });
                 
             } catch (error) {
                 console.error("Error en next_page:", error);
-                await ctx.reply("An error occurred.");
+                await ctx.reply("An error occurred while trying to go to the next page.");
             }
         });
+        
+        
+        
         
         this.bot.action('go_back', async (ctx) => {
             try {
