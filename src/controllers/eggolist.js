@@ -9,10 +9,10 @@ class EggoList {
   }
   
   /**
-   * Añade un artículo a la lista de un chat específico.
-   * @param {number} chatListId - ID de la lista de chat.
-   * @param {string} itemText - Texto del artículo a añadir.
-   * @returns {Promise<Object>} El artículo creado.
+   * Adds an item to a specific chat list.
+   * @param {number} chatListId - The ID of the chat list.
+   * @param {string} itemText - The text of the item to add.
+   * @returns {Promise<Object>} The created item.
    */
   async addItem(chatListId, itemText) {
     try {
@@ -25,10 +25,10 @@ class EggoList {
   
   
   /**
-   * Encuentra un artículo por su nombre en una lista de chat específica.
-   * @param {number} chatListId - ID de la lista de chat.
-   * @param {string} itemName - Nombre del artículo a encontrar.
-   * @returns {Promise<Object|null>} El artículo encontrado o null si no se encuentra.
+   * Finds an item by its name in a specific chat list.
+   * @param {number} chatListId - The ID of the chat list.
+   * @param {string} itemName - The name of the item to find.
+   * @returns {Promise<Object|null>} The found item or null if not found.
    */
   async findItemByName(chatListId, itemName) {
     try {
@@ -40,9 +40,9 @@ class EggoList {
   }
   
   /**
-   * Elimina un artículo de la lista de un chat específico.
-   * @param {number} itemId - ID del artículo a eliminar.
-   * @returns {Promise<number>} Número de artículos eliminados.
+   * Removes an item from a specific chat list.
+   * @param {number} itemId - The ID of the item to remove.
+   * @returns {Promise<number>} The number of items removed.
    */
   async removeItem(itemId) {
     try {
@@ -54,9 +54,9 @@ class EggoList {
   }
   
   /**
-   * Obtiene todos los artículos de la lista de un chat específico.
-   * @param {number} chatListId - ID de la lista de chat.
-   * @returns {Promise<Array>} Lista de artículos.
+   * Gets all items from a specific chat list.
+   * @param {number} chatListId - The ID of the chat list.
+   * @returns {Promise<Array>} The list of items.
    */
   async getItems(chatListId) {
     try {
@@ -68,19 +68,19 @@ class EggoList {
   }
   
   /**
-   * Encuentra un artículo en la base de datos por su ID.
-   * @param {number} itemId - ID del artículo a encontrar.
-   * @returns {Promise<Object|null>} El artículo encontrado o null si no se encuentra.
+   * Finds an item in the database by its ID.
+   * @param {number} itemId - The ID of the item to be found.
+   * @returns {Promise<Object|null>} The found item or null if no item is found.
    */
   async findItemById(itemId) {
     return await EggoListModel.findOne({ where: { id: itemId } });
   }
   
   /**
-   * Actualiza un artículo en la lista.
-   * @param {number} itemId - ID del artículo a actualizar.
-   * @param {Object} newItemData - Nuevos datos para el artículo.
-   * @returns {Promise<Object>} El artículo actualizado.
+   * Updates an item in the list.
+   * @param {number} itemId - The ID of the item to update.
+   * @param {Object} newItemData - New data for the item.
+   * @returns {Promise<Object>} The updated item.
    */
   async updateItem(itemId, newItemData) {
     try {
