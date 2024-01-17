@@ -1,7 +1,5 @@
 const path = require('path');
 
-const config = require(path.join(__dirname, 'config'));
-
 const EggCart = require(path.join(__dirname, 'modules', 'Eggcart'))
 /**
  * Initialize the EggCart with the database location.

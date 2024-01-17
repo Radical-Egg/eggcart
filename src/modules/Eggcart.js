@@ -14,10 +14,8 @@ function escapeMarkdownV2Characters(text) {
 }
 
 function beautifyText(text) {
-    // Remove leading and trailing whitespace
     let trimmedText = text.trim();
     
-    // Remove a trailing period if present
     if (trimmedText.endsWith('.')) {
         trimmedText = trimmedText.slice(0, -1);
     }
@@ -28,13 +26,11 @@ function beautifyText(text) {
         trimmedText = trimmedText.slice(0, -1);
     }
     
-    // Capitalize the first letter
     return trimmedText.replace(/^\w/, c => c.toUpperCase());
 }
 
 
 function generateInlineKeyboard(items, currentPage = 0) {
-    // Determinar el número de elementos y el número de columnas
     const itemCount = items.length;
     let columns;
     let paginated = false;
@@ -47,7 +43,6 @@ function generateInlineKeyboard(items, currentPage = 0) {
         paginated = true;
     }
     
-    // Añadir los botones de los elementos
     const itemsPerPage = 9;
     
     if (paginated) {
@@ -60,26 +55,20 @@ function generateInlineKeyboard(items, currentPage = 0) {
           Markup.button.callback(item.item, `delete_item_${item.id}`));
     }
     
-    // Agregar botones de navegación si es necesario
     if (paginated) {
-        // Agregar botón para ir a la página anterior si no estamos en la primera página
         if (currentPage > 0) {
             buttons.push(Markup.button.callback('⬅️', `prev_page_${currentPage}`));
         }
         
-        // Agregar botón de retorno al menú principal
         buttons.push(Markup.button.callback('↩️', 'go_back'));
         
-        // Agregar botón para ir a la próxima página si hay más elementos
         if (itemCount > currentPage * itemsPerPage) {
             buttons.push(Markup.button.callback('➡️', `next_page_${currentPage}`));
         }
     } else {
-        // Solo añadir botón de retorno al menú principal
         buttons.push(Markup.button.callback('↩️', 'go_back'));
     }
     
-    // Crear el teclado con la cantidad de columnas determinada por la lógica anterior
     return Markup.inlineKeyboard(buttons, {columns: columns});
 }
 
@@ -93,21 +82,23 @@ class EggCart {
         });
     }
     
+    /**
+     * Sets up event handlers for buttons in the Telegram bot.
+     * This function defines the actions to be performed when specific
+     * buttons in the bot's inline keyboard are pressed.
+     */
     setupButtonHandlers() {
         this.bot.action(/prev_page_(\d+)/, async (ctx) => {
             const currentPageIndex = parseInt(ctx.match[1]);
             
             try {
                 const items = await this.listController.getItems();
-                const prevPageIndex = currentPageIndex - 1; // Calcula el índice de la página anterior
+                const prevPageIndex = currentPageIndex - 1;
                 
-                // Si la página anterior sería menor que 0, no hagas nada
                 if (prevPageIndex < 0) return;
                 
-                // Generar un nuevo teclado para la página anterior
                 const newKeyboard = generateInlineKeyboard(items, prevPageIndex);
                 
-                // Borrar el mensaje actual y enviar un nuevo mensaje con el teclado de la página anterior
                 await ctx.deleteMessage();
                 await ctx.reply("Which one do you want to delete?", {
                     reply_markup: newKeyboard.reply_markup
@@ -138,20 +129,17 @@ class EggCart {
         
         this.bot.action(/next_page_(\d+)/, async (ctx) => {
             const currentPageIndex = parseInt(ctx.match[1]);
-            const itemsPerPage = 9; // Este es el número de elementos que deseas mostrar por página
+            const itemsPerPage = 9;
             
             try {
                 const items = await this.listController.getItems();
                 const totalPages = Math.ceil(items.length / itemsPerPage);
-                const nextPageIndex = currentPageIndex + 1; // Calcula el índice de la próxima página
+                const nextPageIndex = currentPageIndex + 1;
                 
-                // Si la página siguiente excede el total de páginas, no hagas nada
                 if (nextPageIndex >= totalPages) return;
                 
-                // Generar un nuevo teclado para la página siguiente
                 const newKeyboard = generateInlineKeyboard(items, nextPageIndex);
                 
-                // Borrar el mensaje actual y enviar un nuevo mensaje con el teclado de la página siguiente
                 await ctx.deleteMessage();
                 await ctx.reply("Which one do you want to delete?", {
                     reply_markup: newKeyboard.reply_markup
@@ -168,9 +156,7 @@ class EggCart {
         
         this.bot.action('go_back', async (ctx) => {
             try {
-                // Borrar el mensaje actual
                 await ctx.deleteMessage();
-                // Invocar la función que maneja el comando /list
                 await this.performGetList(ctx);
             } catch (error) {
                 console.error("Error en go_back:", error);
@@ -181,15 +167,12 @@ class EggCart {
         this.bot.action('check_item', async (ctx) => {
             const currentPage = 0;
             try {
-                // Eliminar el mensaje actual con la lista de compras
                 await ctx.deleteMessage();
                 
-                // Consultar la lista de compras actual
                 const items = await this.listController.getItems();
                 
                 const keyboard = generateInlineKeyboard(items, currentPage);
                 
-                // Responder con un nuevo mensaje y el teclado
                 await ctx.reply("Which one do you want to delete?", keyboard);
                 
             } catch (error) {
@@ -211,7 +194,6 @@ class EggCart {
         });
         
         this.bot.action('clear', async (ctx) => {
-            // Borrar el mensaje de la lista y mostrar el mensaje de confirmación
             try {
                 await ctx.deleteMessage();
                 
@@ -227,7 +209,7 @@ class EggCart {
         });
         
         this.bot.action('confirm_clear', async (ctx) => {
-            console.log("Confirm clear action triggered"); // Registro de depuración
+            console.log("Confirm clear action triggered");
             try {
                 await ctx.deleteMessage();
                 await this.performClearList(ctx);
@@ -293,10 +275,16 @@ class EggCart {
         });
     }
     
+    /**
+     * Performs the action of deleting an item from the shopping list.
+     * This function searches for an item by its name and deletes it if found.
+     *
+     * @param {string} itemName - The name of the item to be deleted.
+     * @returns {Function} A function that takes the Telegraf context and executes the deletion.
+     */
     performDeleteItem(itemName) {
-        // Esta función necesita ser async si estás utilizando await dentro
         return async (ctx) => {
-            let response = '';
+            let response;
             
             try {
                 const item = await this.listController.findItemByName(itemName);
@@ -329,6 +317,13 @@ class EggCart {
         });
     }
     
+    /**
+     * Retrieves the current shopping list and sends it to the user.
+     * This function queries all items in the shopping list and formats them
+     * into a Markdown message to send to the user.
+     *
+     * @param {Object} ctx - The Telegraf context provided by the Telegram bot.
+     */
     async performGetList(ctx) {
         try {
             let items = await this.listController.getItems();
@@ -375,6 +370,12 @@ class EggCart {
         this.setupButtonHandlers();
     }
     
+    /**
+     * Clears the shopping list by deleting all items.
+     * This function removes all items from the shopping list and notifies the user.
+     *
+     * @param {Object} ctx - The Telegraf context provided by the Telegram bot.
+     */
     async performClearList(ctx) {
         try {
             let items = await this.listController.getItems();
