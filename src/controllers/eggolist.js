@@ -1,7 +1,7 @@
 const path = require('path');
 const db = require(path.join(__dirname, '..', 'models'));
 
-// Reference to the EggoList model from the database models
+// Reference to the Eggolist model from the database models
 const EggoListModel = db.EggoList;
 
 class EggoList {
@@ -68,7 +68,7 @@ class EggoList {
   
   /**
    * Finds an item in the database by its ID.
-   * This function queries the EggoList model to find a single item that matches the given ID.
+   * This function queries the Eggolist model to find a single item that matches the given ID.
    *
    * @param {number} itemId - The ID of the item to be found.
    * @returns {Promise<Object|null>} A promise that resolves to the found item or null if no item is found.

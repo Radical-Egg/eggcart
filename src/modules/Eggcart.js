@@ -2,7 +2,7 @@ const path = require('path');
 const { Telegraf, Markup } = require('telegraf')
 
 const config = require(path.join(__dirname, '..', 'config'));
-const EggoListController = require(path.join(__dirname, '..', 'controllers', 'EggoList.js'));
+const EggoListController = require(path.join(__dirname, '..', 'controllers', 'eggolist.js'));
 
 /**
  * Escapes Markdown V2 characters in a given text.
@@ -150,9 +150,6 @@ class EggCart {
                 await ctx.reply("An error occurred while trying to go to the next page.");
             }
         });
-        
-        
-        
         
         this.bot.action('go_back', async (ctx) => {
             try {
