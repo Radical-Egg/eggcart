@@ -67,6 +67,19 @@ class EggoList {
   }
   
   /**
+   * Finds an item in the database by its ID.
+   * This function queries the EggoList model to find a single item that matches the given ID.
+   *
+   * @param {number} itemId - The ID of the item to be found.
+   * @returns {Promise<Object|null>} A promise that resolves to the found item or null if no item is found.
+   */
+  async findItemById(itemId) {
+    return await EggoListModel.findOne({
+      where: {id: itemId}
+    });
+  }
+  
+  /**
    * Update an item in the list.
    * @param {number} itemId - ID of the item to update.
    * @param {Object} newItemData - New data for the item.
