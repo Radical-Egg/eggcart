@@ -53,11 +53,9 @@ function generateInlineKeyboard(items, currentPage = 0) {
     if (paginated) {
         const pageStart = currentPage * itemsPerPage;
         const pageEnd = pageStart + itemsPerPage;
-        items.slice(pageStart, pageEnd).map(item => console.log(item));
         buttons = items.slice(pageStart, pageEnd).map(item =>
           Markup.button.callback(item.item, `delete_item_${item.id}`));
     } else {
-        items.map(item => console.log(item));
         buttons = items.map(item =>
           Markup.button.callback(item.item, `delete_item_${item.id}`));
     }
@@ -66,7 +64,7 @@ function generateInlineKeyboard(items, currentPage = 0) {
     if (paginated) {
         // Agregar botón para ir a la página anterior si no estamos en la primera página
         if (currentPage > 0) {
-            buttons.push(Markup.button.callback('⬅️', `prev_page_${currentPage - 1}`));
+            buttons.push(Markup.button.callback('⬅️', `prev_page_${currentPage}`));
         }
         
         // Agregar botón de retorno al menú principal
@@ -97,17 +95,27 @@ class EggCart {
     
     setupButtonHandlers() {
         this.bot.action(/prev_page_(\d+)/, async (ctx) => {
-            const currentPage = parseInt(ctx.match[1]); // Obtener el número de página del callback
+            const currentPageIndex = parseInt(ctx.match[1]);
+            
             try {
                 const items = await this.listController.getItems();
-                const keyboard = generateInlineKeyboard(items, currentPage);
+                const prevPageIndex = currentPageIndex - 1; // Calcula el índice de la página anterior
                 
-                // Aquí puedes editar el mensaje actual o enviar uno nuevo con el teclado actualizado
-                await ctx.editMessageText("Which one do you want to delete?", { reply_markup: keyboard });
+                // Si la página anterior sería menor que 0, no hagas nada
+                if (prevPageIndex < 0) return;
+                
+                // Generar un nuevo teclado para la página anterior
+                const newKeyboard = generateInlineKeyboard(items, prevPageIndex);
+                
+                // Borrar el mensaje actual y enviar un nuevo mensaje con el teclado de la página anterior
+                await ctx.deleteMessage();
+                await ctx.reply("Which one do you want to delete?", {
+                    reply_markup: newKeyboard.reply_markup
+                });
                 
             } catch (error) {
                 console.error("Error en prev_page:", error);
-                await ctx.reply("An error occurred.");
+                await ctx.reply("An error occurred while trying to go to the previous page.");
             }
         });
         
@@ -289,6 +297,28 @@ class EggCart {
                 ctx.replyWithMarkdownV2(response);
                 }
         });
+    }
+    
+    performDeleteItem(itemName) {
+        // Esta función necesita ser async si estás utilizando await dentro
+        return async (ctx) => {
+            let response = '';
+            
+            try {
+                const item = await this.listController.findItemByName(itemName);
+                if (item) {
+                    await this.listController.removeItem(item.id);
+                    response = `Okay\\! *${escapeMarkdownV2Characters(itemName)}* removed from the shopping list\\.`;
+                } else {
+                    response = `Oh\\! *${escapeMarkdownV2Characters(itemName)}* not found in the shopping list\\.`;
+                }
+            } catch (error) {
+                console.error(error);
+                response = `Oh\\! Error removing *${escapeMarkdownV2Characters(itemName)}* from the shopping list\\.`;
+            }
+            
+            ctx.replyWithMarkdownV2(response);
+        };
     }
     
     /**
