@@ -38,7 +38,7 @@ function generateInlineKeyboard(items, currentPage = 0) {
     const itemCount = items.length;
     let columns;
     let paginated = false;
-    let buttons = [];
+    let buttons;
     
     if (itemCount < 9) {
         columns = [0, 1, 2, 4, 5].includes(itemCount) ? 2 : 3;
@@ -80,8 +80,7 @@ function generateInlineKeyboard(items, currentPage = 0) {
     }
     
     // Crear el teclado con la cantidad de columnas determinada por la lógica anterior
-    const keyboard = Markup.inlineKeyboard(buttons, { columns: columns });
-    return keyboard;
+    return Markup.inlineKeyboard(buttons, {columns: columns});
 }
 
 class EggCart {
@@ -123,6 +122,18 @@ class EggCart {
             } catch (error) {
                 console.error("Error en next_page:", error);
                 await ctx.reply("An error occurred.");
+            }
+        });
+        
+        this.bot.action('go_back', async (ctx) => {
+            try {
+                // Borrar el mensaje actual
+                await ctx.deleteMessage();
+                // Invocar la función que maneja el comando /list
+                await this.performGetList(ctx);
+            } catch (error) {
+                console.error("Error en go_back:", error);
+                await ctx.reply("An error occurred while trying to go back.");
             }
         });
         
