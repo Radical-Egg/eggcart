@@ -167,6 +167,8 @@ class EggCart {
         
         this.bot.action('check_item', async (ctx) => {
             const currentPage = 0;
+            ctx.chat.id = ctx.update.callback_query.message.chat.id;
+            
             try {
                 await ctx.deleteMessage();
                 
@@ -281,6 +283,8 @@ class EggCart {
     }
     
     performDeleteItem(chatId, itemName) {
+        itemName = beautifyText(itemName);
+        
         return async (ctx) => {
             let response;
             
@@ -332,38 +336,50 @@ class EggCart {
      * @param {Object} ctx - The Telegraf context provided by the Telegram bot.
      */
     async performGetList(ctx) {
-        const chatId = ctx.chat.id;
         
+        let chatId = ctx.chat.id;
+        
+        console.log(chatId);
         try {
             // Obtener la lista de chat correspondiente a este chat_id
             const chatList = await this.chatListController.getChatList(chatId);
             
             let response;
+            let keyboard = Markup.inlineKeyboard([]);
+            
+            console.log("chatList:", chatList);  // Agrega esta línea para diagnóstico
+            
             if (chatList) {
+                console.log("chatList.id:", chatList.id);  // Agrega esta línea para diagnóstico
+                
                 // Obtener los elementos de la lista de este chat específico
                 let items = await this.listController.getItems(chatList.id);
                 
                 response = '*Grocery List*\n';
                 if (items.length === 0) {
                     response += "Nothing to shop for\\. \nTry adding eggs\\.";
+                    
                 } else {
                     items.forEach((item, index) => {
                         response += `${index + 1}\\. ${escapeMarkdownV2Characters(item.item)}\n`;
                     });
                     
-                    const keyboard = Markup.inlineKeyboard([
+                    keyboard = Markup.inlineKeyboard([
                         Markup.button.callback('✏️', 'check_item'),
                         Markup.button.callback('✔️', 'ok'),
                         Markup.button.callback('🔥', 'clear')
                     ]);
+                    
                     response += "\nSelect an option:";
                 }
+                
             } else {
                 response = "No shopping list found for this chat\\. \nStart by adding some items\\.";
             }
-            ctx.replyWithMarkdownV2(response);
+            ctx.replyWithMarkdownV2(response, keyboard);
+            
         } catch (error) {
-            console.error(error);
+            console.error('Error performing get list:', error);
             ctx.replyWithMarkdownV2("An error occurred while getting the list\\.");
         }
     }
@@ -413,6 +429,7 @@ class EggCart {
     async clearItems(chatListId) {
         try {
             await EggoListModel.destroy({ where: { chatListId } });
+            
         } catch (error) {
             console.error(error);
             throw error;
