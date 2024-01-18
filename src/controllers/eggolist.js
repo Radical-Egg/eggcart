@@ -74,10 +74,6 @@ class EggoList {
    * @returns {Promise<Array>} - A promise that resolves to the list of items.
    */
   async getItems(chatListId) {
-    console.log('----------------------------------------------------------------')
-    console.log(chatListId)
-    console.log('----------------------------------------------------------------')
-    
     try {
       if (!chatListId) {
         throw new Error('chatListId is required');

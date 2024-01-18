@@ -40,6 +40,7 @@ function generateInlineKeyboard(items, chatId, currentPage = 0) {
     
     if (itemCount < 9) {
         columns = [0, 1, 2, 4, 5].includes(itemCount) ? 2 : 3;
+        
     } else {
         columns = 3;
         paginated = true;
@@ -196,7 +197,8 @@ class EggCart {
             try {
                 await ctx.deleteMessage();
                 
-                const items = await this.listController.getItems(chatId);
+                const chatListId = await this.chatListController.getChatList(chatId);
+                const items = await this.listController.getItems(chatListId.id);
                 
                 const keyboard = generateInlineKeyboard(items, chatId, currentPage);
                 
@@ -226,7 +228,7 @@ class EggCart {
             }
         });
         
-        this.bot.action(/clear_(-?\d+)$/, async (ctx) => {
+        this.bot.action(/^clear_(-?\d+)$/, async (ctx) => {
             const parts = ctx.match[0].split('_')
             const chatId = parts[1]
             
@@ -239,43 +241,42 @@ class EggCart {
                 console.error("Error deleting the message:", error);
             }
             
-            const confirmButton = Markup.button.callback('✔️', `confirm_clear_${chatId}`);
-            const cancelButton = Markup.button.callback('❌', `cancel_clear_${chatId}`);
-            const confirmationKeyboard = Markup.inlineKeyboard([confirmButton, cancelButton]);
-            
-            ctx.reply("Are you sure you want to delete the whole list?", confirmationKeyboard);
+            try {
+                const confirmButton = Markup.button.callback('✔️', `confirm_clear_${chatId}`);
+                const cancelButton = Markup.button.callback('❌', `cancel_clear_${chatId}`);
+                const confirmationKeyboard = Markup.inlineKeyboard([confirmButton, cancelButton]);
+                
+                ctx.reply("Are you sure you want to delete the whole list?", confirmationKeyboard);
+            } catch (error) {
+                console.error("Error in clear command:", error);
+            }
         });
         
         this.bot.action(/confirm_clear_(-?\d+)$/, async (ctx) => {
-            const parts = ctx.match[0].split('_')
-            const chatId = parts[2]
-            ctx.chat.id = chatId
+            const parts = ctx.match[0].split('_');
+            const chatId = parseInt(parts[2]);
             
-            console.log(`confirm_clear_${chatId}`)
+            console.log(`confirm_clear_${chatId}`);
             
-            console.log("Confirm clear action triggered");
             try {
                 await ctx.deleteMessage();
                 await this.performClearList(ctx, chatId);
-                
             } catch (error) {
                 console.error("Error en confirm_clear:", error);
             }
         });
         
         this.bot.action(/cancel_clear_(-?\d+)$/, async (ctx) => {
-            const parts = ctx.match[0].split('_')
-            const chatId = parts[2]
-            ctx.chat.id = chatId
+            const parts = ctx.match[0].split('_');
+            const chatId = parseInt(parts[2]);
             
-            console.log(`confirm_cancel_${chatId}`)
+            console.log(`cancel_clear_${chatId}`);
             
             try {
                 await ctx.deleteMessage();
                 await this.performGetList(ctx, chatId);
-                
             } catch (error) {
-                console.error("Error deleting the message or showing the list:", error);
+                console.error("Error en cancel_clear:", error);
             }
         });
     }
@@ -392,12 +393,13 @@ class EggCart {
             let response;
             let keyboard = Markup.inlineKeyboard([]);
             
-            console.log("chatList:", chatList);  // Agrega esta línea para diagnóstico
+            // console.log("chatList:", chatList);  // Agrega esta línea para diagnóstico
             
             if (chatList) {
                 console.log("chatList.id:", chatList.id);  // Agrega esta línea para diagnóstico
                 
                 // Obtener los elementos de la lista de este chat específico
+                
                 let items = await this.listController.getItems(chatList.id);
                 
                 response = '*Grocery List*\n';
@@ -452,15 +454,10 @@ class EggCart {
      * @param {Object} ctx - The Telegraf context provided by the Telegram bot.
      */
     async performClearList(ctx, chatId) {
-        
         try {
-            // Obtener la lista de chat correspondiente a este chat_id
             const chatList = await this.chatListController.getChatList(chatId);
-            
             if (chatList) {
-                // Eliminar todos los elementos de la lista de este chat específico
                 await this.listController.clearItems(chatList.id);
-                
                 ctx.replyWithMarkdownV2("The shopping list has been cleared\\.");
             } else {
                 ctx.replyWithMarkdownV2("No shopping list found for this chat\\.");
