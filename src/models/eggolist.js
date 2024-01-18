@@ -38,5 +38,6 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'EggoList',
   });
+  
   return EggoList;
 };
