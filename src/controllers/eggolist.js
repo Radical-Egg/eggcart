@@ -23,6 +23,21 @@ class EggoList {
     }
   }
   
+  /**
+   * Clear all items from the list for a specific chat list ID.
+   * @param {number} chatListId - The ID of the chat list to clear.
+   */
+  async clearItems(chatListId) {
+    try {
+      // Eliminar todos los elementos que pertenecen a chatListId
+      await EggoListModel.destroy({
+        where: { chatListId: chatListId }
+      });
+    } catch (error) {
+      console.error('Error clearing items:', error);
+      throw error; // Lanzar el error para manejarlo más arriba en la cadena
+    }
+  }
   
   /**
    * Finds an item by its name in a specific chat list.
@@ -54,16 +69,27 @@ class EggoList {
   }
   
   /**
-   * Gets all items from a specific chat list.
-   * @param {number} chatListId - The ID of the chat list.
-   * @returns {Promise<Array>} The list of items.
+   * Get all items from the list for a specific chat list ID.
+   * @param {number} chatListId - The ID of the chat list whose items are to be retrieved.
+   * @returns {Promise<Array>} - A promise that resolves to the list of items.
    */
   async getItems(chatListId) {
+    console.log('----------------------------------------------------------------')
+    console.log(chatListId)
+    console.log('----------------------------------------------------------------')
+    
     try {
-      return await EggoListModel.findAll({ where: { chatListId } });
+      if (!chatListId) {
+        throw new Error('chatListId is required');
+      }
+      
+      return await EggoListModel.findAll({
+        where: { chatListId: chatListId }
+      });
+      
     } catch (error) {
-      console.error(error);
-      throw error;
+      console.error('Error getting items:', error);
+      throw error; // Lanzar el error para manejarlo más arriba en la cadena
     }
   }
   
