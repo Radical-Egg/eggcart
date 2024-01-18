@@ -43,7 +43,13 @@ To get EggCart up and running, follow these steps:
     POSTGRES_DB_NAME=database
     ```
  
-5. Start the bot:
+5. Set up the database tables:
+    ```bash
+    yarn sequelize-cli db:create
+    yarn sequelize-cli db:migrate
+    ```
+
+6. Start the bot:
     ```bash
     yarn start
     ```
