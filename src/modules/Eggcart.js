@@ -15,6 +15,13 @@ function escapeMarkdownV2Characters(text) {
     return text.replace(/([_()*~`>#+-=|{}[\].!\\])/g, '\\$1');
 }
 
+/**
+ * Beautifies the input text by trimming whitespace, removing trailing periods,
+ * and capitalizing the first character.
+ *
+ * @param {string} text - The text to be beautified.
+ * @returns {string} The beautified text.
+ */
 function beautifyText(text) {
     let trimmedText = text.trim();
     
@@ -31,7 +38,15 @@ function beautifyText(text) {
     return trimmedText.replace(/^\w/, c => c.toUpperCase());
 }
 
-
+/**
+ * Generates an inline keyboard for Telegram chats with pagination if necessary.
+ * The keyboard displays items and includes buttons for deletion and navigation.
+ *
+ * @param {Array} items - The array of items to be displayed as buttons.
+ * @param {number} chatId - The chat ID to which the buttons will send callbacks.
+ * @param {number} [currentPage=0] - The current page number for pagination (default is 0).
+ * @returns {Markup} The inline keyboard markup for Telegram.
+ */
 function generateInlineKeyboard(items, chatId, currentPage = 0) {
     const itemCount = items.length;
     let columns;
@@ -330,6 +345,14 @@ class EggCart {
         });
     }
     
+    /**
+     * Creates a function to delete a specified item from the shopping list.
+     * This method handles finding and removing the item, as well as sending the appropriate response.
+     *
+     * @param {number} chatId - The chat ID in which the item will be deleted.
+     * @param {string} itemName - The name of the item to be deleted.
+     * @returns {Function} A function that takes a Telegram context (ctx) and performs the delete operation.
+     */
     performDeleteItem(chatId, itemName) {
         itemName = beautifyText(itemName);
         
@@ -377,11 +400,12 @@ class EggCart {
     }
     
     /**
-     * Retrieves the current shopping list and sends it to the user.
-     * This function queries all items in the shopping list and formats them
-     * into a Markdown message to send to the user.
+     * Retrieves and displays the shopping list for a specific chat.
+     * This method fetches the list associated with the given chat ID and formats the response,
+     * including an inline keyboard for interaction.
      *
-     * @param {Object} ctx - The Telegraf context provided by the Telegram bot.
+     * @param {Object} ctx - The Telegram context object.
+     * @param {number} chatId - The ID of the chat for which the shopping list is to be retrieved.
      */
     async performGetList(ctx, chatId) {
         
@@ -448,10 +472,11 @@ class EggCart {
     }
     
     /**
-     * Clears the shopping list by deleting all items.
-     * This function removes all items from the shopping list and notifies the user.
+     * Clears the shopping list for a specific chat.
+     * This method handles the removal of all items from the list associated with the given chat ID.
      *
-     * @param {Object} ctx - The Telegraf context provided by the Telegram bot.
+     * @param {Object} ctx - The Telegram context object.
+     * @param {number} chatId - The ID of the chat for which the shopping list is to be cleared.
      */
     async performClearList(ctx, chatId) {
         try {
@@ -468,6 +493,12 @@ class EggCart {
         }
     }
     
+    /**
+     * Removes all items from a shopping list.
+     * This method deletes all items associated with a specific chatListId.
+     *
+     * @param {number} chatListId - The ID of the chat list from which items are to be cleared.
+     */
     async clearItems(chatListId) {
         try {
             await EggoListModel.destroy({ where: { chatListId } });
@@ -478,6 +509,10 @@ class EggCart {
         }
     }
     
+    /**
+     * Starts the Telegram bot and sets up the 'start' command.
+     * When the 'start' command is issued, the bot replies with a welcome message and usage instructions.
+     */
     start() {
         this.bot.command('start', async (ctx) => {
             const messageText = ctx.update.message.text;
