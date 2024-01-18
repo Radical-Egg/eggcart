@@ -15,7 +15,10 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      EggoList.belongsTo(models.ChatList, {
+        foreignKey: 'chatListId',
+        as: 'chatList'
+      });
     }
   }
   EggoList.init({
@@ -23,10 +26,18 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       unique: true,
       allowNull: false
+    },
+    chatListId: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'ChatLists', // Nombre de la tabla
+        key: 'id'
+      }
     }
   }, {
     sequelize,
     modelName: 'EggoList',
   });
+  
   return EggoList;
 };
