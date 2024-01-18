@@ -5,7 +5,6 @@ const config = require(path.join(__dirname, '..', 'config'));
 const EggoListController = require(path.join(__dirname, '..', 'controllers', 'eggolist.js'));
 const ChatListController = require(path.join(__dirname, '..', 'controllers', 'chatlist.js'));
 
-
 /**
  * Escapes Markdown V2 characters in a given text.
  * @param {string} text - The text to escape.
@@ -66,10 +65,11 @@ function generateInlineKeyboard(items, chatId, currentPage = 0) {
     if (paginated) {
         const pageStart = currentPage * itemsPerPage;
         const pageEnd = pageStart + itemsPerPage;
-        buttons = items.slice(pageStart, pageEnd).map(item =>
+        items.slice(pageStart, pageEnd).map(item =>
           Markup.button.callback(item.item, `delete_item_${item.id}_${chatId}`));
+        
     } else {
-        buttons = items.map(item =>
+        items.map(item =>
           Markup.button.callback(item.item, `delete_item_${item.id}_${chatId}`));
     }
     
@@ -86,6 +86,7 @@ function generateInlineKeyboard(items, chatId, currentPage = 0) {
         if (itemCount > currentPage * itemsPerPage) {
             buttons.push(Markup.button.callback('➡️', `next_page_${currentPage}_${chatId}`));
         }
+        
     } else {
         buttons.push(Markup.button.callback('↩️', `go_back_${chatId}`));
     }
@@ -115,6 +116,7 @@ class EggCart {
             const parts = ctx.match[0].split('_');
             const currentPageIndex = parseInt(parts[2]);
             const chatId = parseInt(parts[3]);
+            
             console.log(`prev_page_${currentPageIndex}_${chatId}`);
             
             try {
@@ -145,12 +147,15 @@ class EggCart {
             
             try {
                 const item = await this.listController.findItemById(itemId);
+                
                 if (item) {
                     await ctx.deleteMessage();
                     await this.performDeleteItem(chatId, item.item)(ctx);
+                    
                 } else {
                     await ctx.reply("Item not found.");
                 }
+                
             } catch (error) {
                 console.error("Error en delete_item:", error);
                 await ctx.reply("An error occurred while trying to delete the item.");
@@ -195,6 +200,7 @@ class EggCart {
             try {
                 await ctx.deleteMessage();
                 await this.performGetList(ctx, chatId);
+                
             } catch (error) {
                 console.error("Error en go_back:", error);
                 await ctx.reply("An error occurred while trying to go back.");
@@ -262,6 +268,7 @@ class EggCart {
                 const confirmationKeyboard = Markup.inlineKeyboard([confirmButton, cancelButton]);
                 
                 ctx.reply("Are you sure you want to delete the whole list?", confirmationKeyboard);
+                
             } catch (error) {
                 console.error("Error in clear command:", error);
             }
@@ -276,6 +283,7 @@ class EggCart {
             try {
                 await ctx.deleteMessage();
                 await this.performClearList(ctx, chatId);
+                
             } catch (error) {
                 console.error("Error en confirm_clear:", error);
             }
@@ -290,6 +298,7 @@ class EggCart {
             try {
                 await ctx.deleteMessage();
                 await this.performGetList(ctx, chatId);
+                
             } catch (error) {
                 console.error("Error en cancel_clear:", error);
             }
@@ -338,6 +347,7 @@ class EggCart {
             
             if (messageText.includes(`@${this.botName}`) || chatType === 'private' || chatType === 'group') {
                 let itemsToRemove = messageText.slice(messageText.indexOf(" ") + 1).split(",");
+                
                 for (let itemName of itemsToRemove) {
                     await this.performDeleteItem(chatId, itemName.trim())(ctx);
                 }
@@ -360,22 +370,23 @@ class EggCart {
             let response;
             
             try {
-                // Primero, encontrar la lista de chat para este chat_id
                 const chatList = await this.chatListController.getChatList(chatId);
                 
                 if (chatList) {
-                    // Luego, buscar el artículo por nombre en esta lista de chat
                     const item = await this.listController.findItemByName(chatList.id, itemName);
+                    
                     if (item) {
-                        // Si se encuentra, eliminar el artículo
                         await this.listController.removeItem(item.id);
                         response = `Okay\\! *${escapeMarkdownV2Characters(itemName)}* removed from the shopping list\\.`;
+                        
                     } else {
                         response = `Oh\\! *${escapeMarkdownV2Characters(itemName)}* not found in the shopping list\\.`;
                     }
+                    
                 } else {
                     response = `Oh\\! Shopping list not found for this chat\\.`;
                 }
+                
             } catch (error) {
                 console.error(error);
                 response = `Oh\\! Error removing *${escapeMarkdownV2Characters(itemName)}* from the shopping list\\.`;
@@ -411,22 +422,18 @@ class EggCart {
         
         console.log(chatId);
         try {
-            // Obtener la lista de chat correspondiente a este chat_id
             const chatList = await this.chatListController.getChatList(chatId);
             
             let response;
             let keyboard = Markup.inlineKeyboard([]);
             
-            // console.log("chatList:", chatList);  // Agrega esta línea para diagnóstico
-            
             if (chatList) {
-                console.log("chatList.id:", chatList.id);  // Agrega esta línea para diagnóstico
-                
-                // Obtener los elementos de la lista de este chat específico
+                console.log("chatList.id:", chatList.id);
                 
                 let items = await this.listController.getItems(chatList.id);
                 
                 response = '*Grocery List*\n';
+                
                 if (items.length === 0) {
                     response += "Nothing to shop for\\. \nTry adding eggs\\.";
                     
@@ -447,6 +454,7 @@ class EggCart {
             } else {
                 response = "No shopping list found for this chat\\. \nStart by adding some items\\.";
             }
+            
             ctx.replyWithMarkdownV2(response, keyboard);
             
         } catch (error) {
@@ -481,12 +489,15 @@ class EggCart {
     async performClearList(ctx, chatId) {
         try {
             const chatList = await this.chatListController.getChatList(chatId);
+            
             if (chatList) {
                 await this.listController.clearItems(chatList.id);
                 ctx.replyWithMarkdownV2("The shopping list has been cleared\\.");
+                
             } else {
                 ctx.replyWithMarkdownV2("No shopping list found for this chat\\.");
             }
+            
         } catch (error) {
             console.error(error);
             ctx.replyWithMarkdownV2("An error occurred while clearing the list\\.");
@@ -560,8 +571,6 @@ class EggCart {
             console.error('Error launching bot:', error);
         });
     }
-
 }
 
 module.exports = EggCart;
-
