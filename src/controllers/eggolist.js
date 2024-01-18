@@ -17,6 +17,7 @@ class EggoList {
   async addItem(chatListId, itemText) {
     try {
       return await EggoListModel.create({ chatListId, item: itemText });
+      
     } catch (error) {
       console.error(error);
       throw error;
@@ -33,6 +34,7 @@ class EggoList {
       await EggoListModel.destroy({
         where: { chatListId: chatListId }
       });
+      
     } catch (error) {
       console.error('Error clearing items:', error);
       throw error; // Lanzar el error para manejarlo más arriba en la cadena
@@ -62,6 +64,7 @@ class EggoList {
   async removeItem(itemId) {
     try {
       return await EggoListModel.destroy({ where: { id: itemId } });
+      
     } catch (error) {
       console.error(error);
       throw error;
@@ -114,6 +117,7 @@ class EggoList {
       item.item = newItemData.item;
       await item.save();
       return item;
+      
     } catch (error) {
       console.error(error);
       throw error;
