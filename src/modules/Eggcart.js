@@ -32,7 +32,7 @@ function beautifyText(text) {
 }
 
 
-function generateInlineKeyboard(items, currentPage = 0) {
+function generateInlineKeyboard(items, chatId, currentPage = 0) {
     const itemCount = items.length;
     let columns;
     let paginated = false;
@@ -51,24 +51,27 @@ function generateInlineKeyboard(items, currentPage = 0) {
         const pageStart = currentPage * itemsPerPage;
         const pageEnd = pageStart + itemsPerPage;
         buttons = items.slice(pageStart, pageEnd).map(item =>
-          Markup.button.callback(item.item, `delete_item_${item.id}`));
+          Markup.button.callback(item.item, `delete_item_${item.id}_${chatId}`));
     } else {
         buttons = items.map(item =>
-          Markup.button.callback(item.item, `delete_item_${item.id}`));
+          Markup.button.callback(item.item, `delete_item_${item.id}_${chatId}`));
     }
+    
+    buttons = items.map(item =>
+      Markup.button.callback(item.item, `delete_item_${item.id}_${chatId}`));
     
     if (paginated) {
         if (currentPage > 0) {
-            buttons.push(Markup.button.callback('⬅️', `prev_page_${currentPage}`));
+            buttons.push(Markup.button.callback('⬅️', `prev_page_${currentPage}_${chatId}`));
         }
         
-        buttons.push(Markup.button.callback('↩️', 'go_back'));
+        buttons.push(Markup.button.callback('↩️', `go_back_${chatId}`));
         
         if (itemCount > currentPage * itemsPerPage) {
-            buttons.push(Markup.button.callback('➡️', `next_page_${currentPage}`));
+            buttons.push(Markup.button.callback('➡️', `next_page_${currentPage}_${chatId}`));
         }
     } else {
-        buttons.push(Markup.button.callback('↩️', 'go_back'));
+        buttons.push(Markup.button.callback('↩️', `go_back_${chatId}`));
     }
     
     return Markup.inlineKeyboard(buttons, {columns: columns});
@@ -92,16 +95,19 @@ class EggCart {
      * buttons in the bot's inline keyboard are pressed.
      */
     setupButtonHandlers() {
-        this.bot.action(/prev_page_(\d+)/, async (ctx) => {
-            const currentPageIndex = parseInt(ctx.match[1]);
+        this.bot.action(/^prev_page_(\d+)_(-?\d+)$/, async (ctx) => {
+            const parts = ctx.match[0].split('_');
+            const currentPageIndex = parseInt(parts[2]);
+            const chatId = parseInt(parts[3]);
+            console.log(`prev_page_${currentPageIndex}_${chatId}`);
             
             try {
-                const items = await this.listController.getItems();
+                const items = await this.listController.getItems(chatId);
                 const prevPageIndex = currentPageIndex - 1;
                 
                 if (prevPageIndex < 0) return;
                 
-                const newKeyboard = generateInlineKeyboard(items, prevPageIndex);
+                const newKeyboard = generateInlineKeyboard(items, chatId, prevPageIndex);
                 
                 await ctx.deleteMessage();
                 await ctx.reply("Which one do you want to delete?", {
@@ -114,14 +120,18 @@ class EggCart {
             }
         });
         
-        this.bot.action(/^delete_item_(\d+)$/, async (ctx) => {
-            const itemId = ctx.match[1];
+        this.bot.action(/^delete_item_(\d+)_(-?\d+)$/, async (ctx) => {
+            const parts = ctx.match[0].split('_');
+            const itemId = parts[2];
+            const chatId = parts[3];
+            
+            console.log(`delete_item_${itemId}_${chatId}`);
             
             try {
                 const item = await this.listController.findItemById(itemId);
                 if (item) {
                     await ctx.deleteMessage();
-                    await this.performDeleteItem(item.item)(ctx);
+                    await this.performDeleteItem(chatId, item.item)(ctx);
                 } else {
                     await ctx.reply("Item not found.");
                 }
@@ -131,18 +141,22 @@ class EggCart {
             }
         });
         
-        this.bot.action(/next_page_(\d+)/, async (ctx) => {
-            const currentPageIndex = parseInt(ctx.match[1]);
+        this.bot.action(/next_page_(\d+)_(-?\d+)$/, async (ctx) => {
+            const parts = ctx.match[0].split('_');
+            const currentPageIndex = parseInt(parts[2]);
+            const chatId = parseInt(parts[3])
             const itemsPerPage = 9;
             
+            console.log(`next_page_${currentPageIndex}_${chatId}`);
+            
             try {
-                const items = await this.listController.getItems();
+                const items = await this.listController.getItems(chatId);
                 const totalPages = Math.ceil(items.length / itemsPerPage);
                 const nextPageIndex = currentPageIndex + 1;
                 
                 if (nextPageIndex >= totalPages) return;
                 
-                const newKeyboard = generateInlineKeyboard(items, nextPageIndex);
+                const newKeyboard = generateInlineKeyboard(items, chatId, nextPageIndex);
                 
                 await ctx.deleteMessage();
                 await ctx.reply("Which one do you want to delete?", {
@@ -155,26 +169,36 @@ class EggCart {
             }
         });
         
-        this.bot.action('go_back', async (ctx) => {
+        this.bot.action(/go_back_(-?\d+)$/, async (ctx) => {
+            const parts = ctx.match[0].split('_')
+            const chatId = parseInt(parts[2]);
+            ctx.chat.id = chatId
+            
+            console.log(`go_back_${chatId}`)
+            
             try {
                 await ctx.deleteMessage();
-                await this.performGetList(ctx);
+                await this.performGetList(ctx, chatId);
             } catch (error) {
                 console.error("Error en go_back:", error);
                 await ctx.reply("An error occurred while trying to go back.");
             }
         });
         
-        this.bot.action('check_item', async (ctx) => {
+        this.bot.action(/check_item_(-?\d+)$/, async (ctx) => {
             const currentPage = 0;
-            ctx.chat.id = ctx.update.callback_query.message.chat.id;
+            const parts = ctx.match[0].split('_')
+            const chatId = parseInt(parts[2]);
+            ctx.chat.id = chatId
+            
+            console.log(`check_item_${chatId}`)
             
             try {
                 await ctx.deleteMessage();
                 
-                const items = await this.listController.getItems();
+                const items = await this.listController.getItems(chatId);
                 
-                const keyboard = generateInlineKeyboard(items, currentPage);
+                const keyboard = generateInlineKeyboard(items, chatId, currentPage);
                 
                 await ctx.reply("Which one do you want to delete?", keyboard);
                 
@@ -184,7 +208,13 @@ class EggCart {
             }
         });
         
-        this.bot.action('ok', async (ctx) => {
+        this.bot.action(/ok_(-?\d+)$/, async (ctx) => {
+            const parts = ctx.match[0].split('_')
+            const chatId = parseInt(parts[1]);
+            ctx.chat.id = chatId
+            
+            console.log(`ok_${chatId}`)
+            
             try {
                 await ctx.editMessageReplyMarkup({
                     chat_id: ctx.chat.id,
@@ -196,7 +226,12 @@ class EggCart {
             }
         });
         
-        this.bot.action('clear', async (ctx) => {
+        this.bot.action(/clear_(-?\d+)$/, async (ctx) => {
+            const parts = ctx.match[0].split('_')
+            const chatId = parts[1]
+            
+            console.log(`clear_${chatId}`)
+            
             try {
                 await ctx.deleteMessage();
                 
@@ -204,28 +239,40 @@ class EggCart {
                 console.error("Error deleting the message:", error);
             }
             
-            const confirmButton = Markup.button.callback('✔️', 'confirm_clear');
-            const cancelButton = Markup.button.callback('❌', 'cancel_clear');
+            const confirmButton = Markup.button.callback('✔️', `confirm_clear_${chatId}`);
+            const cancelButton = Markup.button.callback('❌', `cancel_clear_${chatId}`);
             const confirmationKeyboard = Markup.inlineKeyboard([confirmButton, cancelButton]);
             
             ctx.reply("Are you sure you want to delete the whole list?", confirmationKeyboard);
         });
         
-        this.bot.action('confirm_clear', async (ctx) => {
+        this.bot.action(/confirm_clear_(-?\d+)$/, async (ctx) => {
+            const parts = ctx.match[0].split('_')
+            const chatId = parts[2]
+            ctx.chat.id = chatId
+            
+            console.log(`confirm_clear_${chatId}`)
+            
             console.log("Confirm clear action triggered");
             try {
                 await ctx.deleteMessage();
-                await this.performClearList(ctx);
+                await this.performClearList(ctx, chatId);
                 
             } catch (error) {
                 console.error("Error en confirm_clear:", error);
             }
         });
         
-        this.bot.action('cancel_clear', async (ctx) => {
+        this.bot.action(/cancel_clear_(-?\d+)$/, async (ctx) => {
+            const parts = ctx.match[0].split('_')
+            const chatId = parts[2]
+            ctx.chat.id = chatId
+            
+            console.log(`confirm_cancel_${chatId}`)
+            
             try {
                 await ctx.deleteMessage();
-                await this.performGetList(ctx);
+                await this.performGetList(ctx, chatId);
                 
             } catch (error) {
                 console.error("Error deleting the message or showing the list:", error);
@@ -323,7 +370,7 @@ class EggCart {
             const chatType = ctx.update.message.chat.type;
             
             if (messageText.includes(`@${this.botName}`) || chatType === 'private' || chatType === 'group') {
-                await this.performGetList(ctx);
+                await this.performGetList(ctx, ctx.chat.id);
             }
         });
     }
@@ -335,9 +382,7 @@ class EggCart {
      *
      * @param {Object} ctx - The Telegraf context provided by the Telegram bot.
      */
-    async performGetList(ctx) {
-        
-        let chatId = ctx.chat.id;
+    async performGetList(ctx, chatId) {
         
         console.log(chatId);
         try {
@@ -365,9 +410,9 @@ class EggCart {
                     });
                     
                     keyboard = Markup.inlineKeyboard([
-                        Markup.button.callback('✏️', 'check_item'),
-                        Markup.button.callback('✔️', 'ok'),
-                        Markup.button.callback('🔥', 'clear')
+                        Markup.button.callback('✏️', `check_item_${chatId}`),
+                        Markup.button.callback('✔️', `ok_${chatId}`),
+                        Markup.button.callback('🔥', `clear_${chatId}`)
                     ]);
                     
                     response += "\nSelect an option:";
@@ -393,7 +438,7 @@ class EggCart {
             const chatType = ctx.update.message.chat.type;
             
             if (messageText.includes(`@${this.botName}`) || chatType === 'private' || chatType === 'group') {
-                await this.performClearList(ctx);
+                await this.performClearList(ctx, ctx.chat.id);
             }
         });
         
@@ -406,8 +451,8 @@ class EggCart {
      *
      * @param {Object} ctx - The Telegraf context provided by the Telegram bot.
      */
-    async performClearList(ctx) {
-        const chatId = ctx.chat.id; // Obtener chat_id
+    async performClearList(ctx, chatId) {
+        
         try {
             // Obtener la lista de chat correspondiente a este chat_id
             const chatList = await this.chatListController.getChatList(chatId);
